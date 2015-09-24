@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="deck-back" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 60 90" style="enable-background:new 0 0 60 90;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;stroke:#020202;stroke-width:0.5;}
+	.st1{fill:#55AA55;}
+	.st2{fill:#FFFFFF;}
+	.st3{fill:#FF1D1D;}
+	.st4{fill:none;}
+	.st5{font-family:'ArialMT';}
+	.st6{font-size:18px;}
+	.st7{fill:#F7CE26;}
+</style>
+
+<g id="card-back" transform="matrix(4,0,0,4,-1260,-2077.0865)">
+	<path id="rect2987-4_1_" class="st0" d="M317.5,519.3h10c1.4,0,2.5,1.1,2.5,2.5v17.5c0,1.4-1.1,2.5-2.5,2.5h-10
+		c-1.4,0-2.5-1.1-2.5-2.5v-17.5C315,520.4,316.1,519.3,317.5,519.3z"/>
+	<path id="rect3757-2_1_" d="M317.5,520.5h10c0.7,0,1.2,0.6,1.2,1.2v17.5c0,0.7-0.6,1.2-1.2,1.2h-10c-0.7,0-1.2-0.6-1.2-1.2v-17.5
+		C316.2,521.1,316.8,520.5,317.5,520.5z"/>
+	<path id="path3773-0-4-8-4-3_1_" class="st3" d="M326.2,524.3c-5.5,0-10,4.5-10,10c0,1.4,1.1,2.5,2.5,2.5c5.5,0,10-4.5,10-10
+		C328.8,525.4,327.6,524.3,326.2,524.3z"/>
+	<rect id="XMLID_1_" x="304.2" y="522.9" class="st4" width="36.7" height="16.4"/>
+	<text id="XMLID_3_" transform="matrix(0.2372 -7.905627e-02 7.905627e-02 0.2372 318.5157 533.9366)" class="st5 st6">UNO</text>
+	<text id="XMLID_2_" transform="matrix(0.2372 -7.905627e-02 7.905627e-02 0.2372 318.2969 533.7804)" class="st7 st5 st6">UNO</text>
+</g>
+</svg>

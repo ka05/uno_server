@@ -1,0 +1,34 @@
+doctype html
+html
+    head
+        title= title
+        link(rel='stylesheet', href='stylesheets/materialize/bin/materialize.css', media="screen,projection")
+        link(rel='stylesheet', href='/stylesheets/style.css')
+    body
+        div(class="navbar-fixed")
+            nav
+                div(class="nav-wrapper")
+                    a(id="page-route", style="display:none")= page
+                    a(href="#", class="brand-logo", click:handleNavigation, data-view-name="main")= title
+                    a(href="#", data-activates="mobile-nav", class="button-collapse")
+                        i(class="material-icons") menu
+                    ul(id="nav-mobile", class="right hide-on-med-and-down")
+                        li(data-bind="visible:userLoggedIn, click:handleNavigation", data-view-name="profile")
+                            a#nav-profile(href="#") Profile
+                        li(data-bind="click:handleNavigation", data-view-name="login")
+                            a#nav-login(href="#") Login
+                    ul(class="side-nav collection" id="mobile-nav")
+                        li(data-bind="visible:userLoggedIn, click:handleNavigation", data-view-name="Play")
+                            span(class="") Profile
+                            i(class="small material-icons menu-icon") perm_identity
+                        li(data-bind="click:handleNavigation, visible:userLoggedIn", data-view-name="login")
+                            span(class="") Login
+                            i(class="small material-icons menu-icon") input
+        block content
+        script(src='/lib/jquery.js')
+        script(src='/lib/progressbar.min.js')
+        script(type='text/javascript', src='lib/materialize.js')
+        script(src='/lib/knockout.js')
+        script(src="/lib/validate.js")
+        script(src="/javascripts/deck.js")
+        script(src='/javascripts/global.js')

@@ -1,0 +1,258 @@
+extends layout
+
+block content
+    div#mainContent(data-bind="template: { name:bodyTmpl }")
+
+
+    script(type="text/html", id="blank-tmpl")
+
+    script(type="text/html", id="profile")
+        // SHOW USER INFO
+        div(class="col s6 center" id="user-banner")
+            div(id="img-cont")
+                //span(class="add-photo-txt") Upload Photo
+            h3(data-bind="text:currUser().fullname")
+            button(class="btn waves-effect waves-light", data-bind='click:editAccount') Edit
+            div#user-info
+                br
+                span UID:
+                span(data-bind="text:currUser().uid")
+                br
+                span Email:
+                span(data-bind="text:currUser().email")
+                div(data-bind="visible:hasPhoneNum")
+                    span Phone:
+                    span(data-bind="text:currUser().phone")
+
+
+        // /SHOW USER INFO
+
+    script(type="text/html", id="edit-profile")
+        div(class="row")
+            fieldset
+                div(class="row")
+                    div(class="input-field col s12")
+                        input#inputUserFullname(type='text', name='name', class="validate")
+                        label(for="name") Full Name
+                div(class="row")
+                    div(class="input-field col s12")
+                        input#inputUID(type='text', name='uid', class="validate")
+                        label(for="uid") UID
+                div(class="row")
+                    div(class="input-field col s12")
+                        input#inputUserEmail(type='text', name='email', class="validate")
+                        label(for="email") Email
+                div(class="row")
+                    div(class="input-field col s12")
+                        input#inputUserEmail(type='text', name='email', class="validate")
+                        label(for="email") Phone
+                br
+                button(class="btn waves-effect waves-light", data-bind="click:updateUser")#btnAddUser Save
+                button(class="btn waves-effect waves-light", data-bind="click:handleNavigation", data-view-name="profile", style="margin-left:20px")#btnAddUser Cancel
+
+
+    script(type="text/html", id="login")
+        div(class="row", data-bind="template: { name: loginBodyTmpl}")
+        div(class="row")
+            button(class="btn waves-effect waves-light", data-bind='click:login', style="margin-left:20px") Login
+            button(class="btn waves-effect waves-light", data-bind='click:signUp', style="margin-left:20px") Sign Up
+
+    script(type="text/html", id="login-body")
+        div(class="row")
+            h4(class="center") Login
+            br
+            div(class="col s12", id="login-body-form")
+                div(class="row")
+                    div(class="input-field col s12")
+                        i(class="material-icons prefix") account_circle
+                        input#loginUsername(type='text', name='name', class="validate")
+                        label(for="name") Username
+                div(class="row")
+                    div(class="input-field col s12")
+                        i(class="material-icons prefix") vpn_key
+                        input#loginPass(type='text', name='name', class="validate")
+                        label(for="name") Password
+    script(type="text/html", id="signup-body")
+        div(class="row" id="signup-body")
+            h4(class="center") Sign Up
+            br
+            div(class="col s12", id="signup-body-form")
+                div(class="row form-group")
+                    div(class="input-field col s12")
+                        input#inputUserEmail(type='email', name='email', class="validate")
+                        label(for="email") Email
+                        div(class="error-msg")
+                div(class="row form-group")
+                    div(class="input-field col s12")
+                        input#inputUsername(type='text', name='username', class="validate")
+                        label(for="username") Username
+                        div(class="error-msg")
+                div(class="row form-group")
+                    div(class="input-field col s12")
+                        input#inputUserPassword(type='password', name='password', class="validate")
+                        label(for="password") Password
+                        div(class="error-msg")
+                div(class="row form-group")
+                    div(class="input-field col s12")
+                        input#inputUserVerifyPassword(type='password', name='confirm-password', class="validate")
+                        label(for="confirm-password") Confirm Password
+                        div(class="error-msg")
+
+
+    script(type="text/html", id="main")
+        div(id="home-bg")
+            div(id="main-btn-cont")
+                button(class="btn btn-main" data-bind="click:handleNavigation", data-view-name="login", data-subview-name="login-body") Login
+                br
+                button(class="btn btn-main" data-bind="click:handleNavigation", data-view-name="login", data-subview-name="signup-body") Sign Up
+
+
+    script(type="text/html", id="lobby")
+        div(id="lobby-main")
+
+
+    script(type="text/html", id="testing")
+        div(class="row")
+            h4 Functions
+            br
+            button(class="btn waves-effect waves-light", data-bind='click:getUsers', style="margin-left:20px") Get Users
+            button(class="btn waves-effect waves-light", data-bind='click:getBooks', style="margin-left:20px") Get Books
+            // Wrapper
+            #wrapper
+                div(class="row")
+                    // USER LIST
+                    div(class="col s6")
+                        h3 User List
+                        #userList(style="margin-bottom:20px")
+                            table
+                                thead
+                                    th Full Name
+                                    th Email
+                                    th Delete?
+                                tbody(data-bind='foreach:userList')
+                                    tr(data-bind='attr:{ \'data-id\':uid }')
+                                        td(data-bind='text:fullname, click:$parent.getUser')
+                                        td(data-bind='text:email')
+                                        td(data-bind='click:$parent.removeUser') Delete
+                    // BOOK LIST
+                    div(class="col s6")
+                        h3 Book List
+                        #userList(style="margin-bottom:20px")
+                            table
+                                thead
+                                    th Title
+                                    th Condtion
+                                    th Delete?
+                                tbody(data-bind='foreach:bookList')
+                                    tr(data-bind='attr:{ \'data-id\':isbn }')
+                                        td(data-bind='text:title, click:$parent.getBook')
+                                        td(data-bind='text:condition')
+                                        td(data-bind='click:$parent.removeBook') Delete
+
+
+
+                div(class="row")
+                    // SHOW USER INFO
+                    div(class="col s6")
+                        h3 User Info
+                        div#user-info
+                            span Full Name:
+                            span(data-bind="text:currUser().fullname")
+                            br
+                            span UID:
+                            span(data-bind="text:currUser().uid")
+                            br
+                            span Email:
+                            span(data-bind="text:currUser().email")
+                            br
+                            span Rating:
+                            span(data-bind="text:currUser().rating")
+                    // /SHOW USER INFO
+
+                    // SHOW BOOK INFO
+                    div(class="col s6")
+                        h3 Book Info
+                        div#user-info
+                            span ISBN:
+                            span(data-bind="text:currBook().isbn")
+                            br
+                            span Title:
+                            span(data-bind="text:currBook().title")
+                            br
+                            span Edition:
+                            span(data-bind="text:currBook().edition")
+                            br
+                            span Description:
+                            span(data-bind="text:currBook().description")
+                            br
+                            span Price:
+                            span(data-bind="text:currBook().price")
+                    // /SHOW BOOK INFO
+
+                div(class="row")
+                    // ADD USER
+                    div(class="col m6")
+                        h3 Add User
+                        #addUser
+                            fieldset
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputUserFullname(type='text', name='name', class="validate")
+                                        label(for="name") Full Name
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputUID(type='text', name='uid', class="validate")
+                                        label(for="uid") UID
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputUserEmail(type='text', name='email', class="validate")
+                                        label(for="email") Email
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputUserRating(type='text', name='rating', class="validate")
+                                        label(for="rating") Rating
+                                br
+                                button(class="btn waves-effect waves-light", data-bind="click:addUser")#btnAddUser Add User
+                    // /ADD USER
+                    // ADD BOOK
+                    div(class="col s6")
+                        h3 Add Book
+                        #addBook
+                            fieldset
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputBookISBN(type='text', name='isbn', class="validate")
+                                        label(for="isbn") ISBN
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputBookTitle(type='text', name='book-title', class="validate")
+                                        label(for="book-title") Title
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputBookEdition(type='text', name='edition', class="validate")
+                                        label(for="edition") Edition
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputBookPrice(type='text', name='price', class="validate")
+                                        label(for="price") Price
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputBookDesc(type='text', name='description', class="validate")
+                                        label(for="description") Description
+                                div(class="row")
+                                    div(class="input-field col s12")
+                                        input#inputBookHardcover(type='checkbox' name='inputBookHardcover', class="filled-in")
+                                        label(for="inputBookHardcover") Is Harcover
+                                        div(class="row")
+                                    div(class="input-field col s12")
+                                        span Condition
+                                        select#inputBookQual(name='condition', class='browser-default')
+                                            option(value='good') Good
+                                            option(value='bad') Bad
+                                            option(value='ugly') Ugly
+                                br
+                                button(class="btn waves-effect waves-light", data-bind="click:addBook")#btnAddUser Add Book
+                    // / ADD BOOK
+            // /WRAPPER
+
+
