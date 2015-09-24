@@ -111,6 +111,127 @@ block content
         div(id="lobby-main")
 
 
+    script(type="text/html", id="game")
+        div(id="game-main")
+            div(style='display:none;')
+                // RED CARDS
+                object#r0(data='media/cards/r0.svg', type='image/svg+xml')
+                    | Your browser doesn't support SVG
+                object#r1(data='media/cards/r1.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#r2(data='media/cards/r2.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#r3(data='media/cards/r3.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#r4(data='media/cards/r4.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#r5(data='media/cards/r5.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#r6(data='media/cards/r6.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#r7(data='media/cards/r7.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#r8(data='media/cards/r8.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#r9(data='media/cards/r9.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#rs(data='media/cards/rs.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#rr(data='media/cards/rr.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#rd(data='media/cards/rd.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                // BLUE CARDS
+                object#b0(data='media/cards/b0.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b1(data='media/cards/b1.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b2(data='media/cards/b2.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b3(data='media/cards/b3.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b4(data='media/cards/b4.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b5(data='media/cards/b5.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b6(data='media/cards/b6.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b7(data='media/cards/b7.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b8(data='media/cards/b8.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#b9(data='media/cards/b9.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#bs(data='media/cards/bs.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#br(data='media/cards/br.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#bd(data='media/cards/bd.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                // YELLOW CARDS
+                object#y0(data='media/cards/y0.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y1(data='media/cards/y1.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y2(data='media/cards/y2.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y3(data='media/cards/y3.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y4(data='media/cards/y4.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y5(data='media/cards/y5.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y6(data='media/cards/y6.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y7(data='media/cards/y7.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y8(data='media/cards/y8.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#y9(data='media/cards/y9.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#ys(data='media/cards/ys.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#yr(data='media/cards/yr.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#yd(data='media/cards/yd.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                // GREEN CARDS
+                object#g0(data='media/cards/g0.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g1(data='media/cards/g1.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g2(data='media/cards/g2.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g3(data='media/cards/g3.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g4(data='media/cards/g4.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g5(data='media/cards/g5.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g6(data='media/cards/g6.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g7(data='media/cards/g7.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g8(data='media/cards/g8.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#g9(data='media/cards/g9.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#gs(data='media/cards/gs.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#gr(data='media/cards/gr.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#gd(data='media/cards/gd.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                // WILD CARDS
+                object#w(data='media/cards/w.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                object#wd(data='media/cards/wd.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+                // CARD BACK
+                object#cb(data='media/cards/cb.svg', type='image/svg+xml', height='90', width='60')
+                    | Your browser doesn't support SVG
+
+
     script(type="text/html", id="testing")
         div(class="row")
             h4 Functions
