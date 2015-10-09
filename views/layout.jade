@@ -3,28 +3,49 @@ html
     head
         title= title
         link(rel='stylesheet', href='stylesheets/materialize/bin/materialize.css', media="screen,projection")
-        link(rel='stylesheet', href='/stylesheets/style.css')
-    body
+        link(rel='stylesheet', href='/stylesheets/main.css')
+    body(class="bg-main")
         div(class="navbar-fixed")
             nav
                 div(class="nav-wrapper")
                     a(id="page-route", style="display:none")= page
-                    a(href="#", class="brand-logo", click:handleNavigation, data-view-name="main")= title
+                    a(href="#", class="brand-logo", data-bind="click:handleNavigation", data-view-name="main")= title
                     a(href="#", data-activates="mobile-nav", class="button-collapse")
                         i(class="material-icons") menu
                     ul(id="nav-mobile", class="right hide-on-med-and-down")
+                        li(data-bind="visible:userLoggedIn, click:handleNavigation", data-view-name="lobby")
+                            a#nav-profile(href="#") Lobby
                         li(data-bind="visible:userLoggedIn, click:handleNavigation", data-view-name="profile")
                             a#nav-profile(href="#") Profile
-                        li(data-bind="click:handleNavigation", data-view-name="login")
+                        li(data-bind="visible:!(userLoggedIn), click:handleNavigation", data-view-name="login")
                             a#nav-login(href="#") Login
                     ul(class="side-nav collection" id="mobile-nav")
                         li(data-bind="visible:userLoggedIn, click:handleNavigation", data-view-name="Play")
-                            span(class="") Profile
+                            span(class="") Play
                             i(class="small material-icons menu-icon") perm_identity
                         li(data-bind="click:handleNavigation, visible:userLoggedIn", data-view-name="login")
                             span(class="") Login
                             i(class="small material-icons menu-icon") input
+        // Modal Structure
+        div#challengeUserModal(class="modal")
+            div(class="modal-content")
+                h5 Select a user to challenge
+                div(class="collection" data-bind="foreach:activeUsers")
+                    p(class="collection-item")
+                        input(type="radio", name="active-users", data-bind="attr:{ id:id }")
+                        label(data-bind="text:username, attr:{ for:id }")
+            div(class="modal-footer")
+                a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
+                a(class="waves-effect waves-green btn-flat disabled" id="btn-challenge") Challenge
+
+        div#challengeRespModal(class="modal")
+            div(class="modal-content")
+                h5(data-bind="text:challengeModalHeaderMsg")
+            div(class="modal-footer", data-bind="template:challengeFooterTmpl")
+
+
         block content
+        script(src="/lib/socket.io.js")
         script(src='/lib/jquery.js')
         script(src='/lib/progressbar.min.js')
         script(type='text/javascript', src='lib/materialize.js')

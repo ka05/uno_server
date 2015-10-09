@@ -52,30 +52,34 @@ block content
 
 
     script(type="text/html", id="login")
-        div(class="row", data-bind="template: { name: loginBodyTmpl}")
-        div(class="row")
-            button(class="btn waves-effect waves-light", data-bind='click:login', style="margin-left:20px") Login
-            button(class="btn waves-effect waves-light", data-bind='click:signUp', style="margin-left:20px") Sign Up
+        //div(class="bg-main")
+        div(class="main-wrap")
+            div(class="card login-card")
+                div(class="card-content bg-dk-cover")
+                    div(class="card-title card-heading" data-bind="text:pageHeading")
+                    div(class="row", data-bind="template: { name: loginBodyTmpl}")
+                    div(class="row")
+                        div(class="col s12")
+                            button(class="btn waves-effect waves-light btn-lt", data-bind='click:login', style="width: 49%;") Login
+                            button(class="btn waves-effect waves-light btn-lt", data-bind='click:signUp', style="margin-left:2%;width: 49%;") Sign Up
 
     script(type="text/html", id="login-body")
         div(class="row")
-            h4(class="center") Login
-            br
             div(class="col s12", id="login-body-form")
                 div(class="row")
                     div(class="input-field col s12")
                         i(class="material-icons prefix") account_circle
-                        input#loginUsername(type='text', name='name', class="validate")
+                        input#loginUsername(type='text', name='name', class="validate", value="kaos")
                         label(for="name") Username
                 div(class="row")
                     div(class="input-field col s12")
                         i(class="material-icons prefix") vpn_key
-                        input#loginPass(type='text', name='name', class="validate")
+                        input#loginPass(type='password', name='name', class="validate", value="testing")
                         label(for="name") Password
+                div#login-error-msg(data-bind="text:errorMsg" class="error-txt" style="display:none;")
+
     script(type="text/html", id="signup-body")
         div(class="row" id="signup-body")
-            h4(class="center") Sign Up
-            br
             div(class="col s12", id="signup-body-form")
                 div(class="row form-group")
                     div(class="input-field col s12")
@@ -97,22 +101,74 @@ block content
                         input#inputUserVerifyPassword(type='password', name='confirm-password', class="validate")
                         label(for="confirm-password") Confirm Password
                         div(class="error-msg")
-
+                div#signup-error-msg(data-bind="text:errorMsg" class="error-txt" style="display:none;")
 
     script(type="text/html", id="main")
         div(id="home-bg")
             div(id="main-btn-cont")
-                button(class="btn btn-main" data-bind="click:handleNavigation", data-view-name="login", data-subview-name="login-body") Login
+                button(class="btn btn-main" data-bind="click:handleNavigation", data-view-name="login", data-subview-name="login-body", data-subview-title="Login") Login
                 br
-                button(class="btn btn-main" data-bind="click:handleNavigation", data-view-name="login", data-subview-name="signup-body") Sign Up
+                button(class="btn btn-main" data-bind="click:handleNavigation", data-view-name="login", data-subview-name="signup-body", data-subview-title="Sign Up") Sign Up
 
 
     script(type="text/html", id="lobby")
+        //div(id="lobby-main", class="bg-main")
         div(id="lobby-main")
+
+            div#chat-window
+                div#chat-cont(data-bind="foreach:chatMsgs")
+                    div(class="card-panel", style="margin:.5em;overflow-x:hidden")
+                        b
+                            span(data-bind="text:sender, attr:{ 'class':senderColor}")
+                        span(style="margin-right:1em;") :
+                        span(data-bind="text:message")
+                div#chat-controls(class="row")
+                    div(class="input-field col pw-90")
+                        input#chat-msg(type="text")
+                        label(for="chat-msg") Chat Message
+                    div(class="col chat-btn pw-10")
+                        i(class="material-icons", data-bind="click:sendChat", data-roomid="1") send
+
+            div(class="row")
+                div(class="col s12")
+                    div(class="collection with-header bg-white")
+                        div(class="")
+                            div(style="float:left;width:50%;", class="collection-header challenge-heading")
+                                h6(style="padding:0 2em") Sent Challenges
+                            div(style="float:left;width:50%;", class="collection-header challenge-heading")
+                                h6(style="padding:0 2em") Received Challenges
+                            div(style="float:left;width:50%;min-height:41px;")
+                                div(data-bind="foreach:sentChallenges")
+                                    a(data-bind="text:'You challenged ' + userChallenged + ' (' + status + ')', attr:{ 'data-id':challengeId, 'data-userchallenged':userChallenged, 'class':'collection-item challenge-text ' + challengeClass }, click:$parent.promptCancelChallenge")
+                            div(style="float:left;width:50%;min-height:41px;")
+                                div(data-bind="foreach:receivedChallenges")
+                                    a(data-bind="text:'Challenge from ' + challenger + ' (' + status + ')', attr:{ 'data-id':challengeId, 'data-challenger':challenger, 'class':'collection-item challenge-text ' + challengeClass }, click:$parent.promptChallengeResponse")
+
+
+            div(class="row")
+                div(class="col s12")
+                    button(class="btn btn-main", data-bind="click:showSendChallengeModal", data-view-name="game") Challenge Someone!
+            //button(class="btn btn-main", data-bind="click:handleNavigation", data-view-name="game") Play Game
 
 
     script(type="text/html", id="game")
         div(id="game-main")
+            div#players(class="row bg-gray")
+                div#player-sect
+                div.clearfix
+            div#game-view(class="row")
+                div#game-card-view
+                    div#deck-view.card-view
+                        object#deck(data='media/cards/cb.svg', type='image/svg+xml', width='60')
+                            | Your browser doesn't support SVG
+                    div#current-gc-view.card-view
+                        object#current-gc(data='media/cards/r0.svg', type='image/svg+xml', width='60')
+                            | Your browser doesn't support SVG
+                    div#previous-gc-view.card-view
+                        object#previous-gc(data='media/cards/b2.svg', type='image/svg+xml', height='90', width='60')
+                            | Your browser doesn't support SVG
+                    .clearfix
+            div#player-hand(class="row")
             div(style='display:none;')
                 // RED CARDS
                 object#r0(data='media/cards/r0.svg', type='image/svg+xml')
@@ -231,6 +287,11 @@ block content
                 object#cb(data='media/cards/cb.svg', type='image/svg+xml', height='90', width='60')
                     | Your browser doesn't support SVG
 
+
+    script(type="text/html", id="bad-browser")
+        div(class="row")
+            h1(class="error-msg") This browser is not supported
+            h2(class="error-msg") Please update your browser
 
     script(type="text/html", id="testing")
         div(class="row")
@@ -376,4 +437,10 @@ block content
                     // / ADD BOOK
             // /WRAPPER
 
-
+    script(type="text/html", id="challenge-resp-footer-tmpl")
+        a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
+        a(class="waves-effect waves-green btn-flat" id="btn-accept-challenge") Accept
+        a(class="waves-effect waves-green btn-flat" id="btn-decline-challenge") Decline
+    script(type="text/html", id="challenge-cancel-footer-tmpl")
+        a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
+        a(class="waves-effect waves-green btn-flat" id="btn-cancel-challenge") Cancel Challenge

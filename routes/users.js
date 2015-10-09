@@ -5,25 +5,69 @@ var bcrypt = require('bcrypt');
 var validate = require("validate.js");
 validate.moment = require("moment");
 
+var coreData = require('../coreData/coreData.js');
+
+var mongo = require('mongoskin');
+var ObjectID = require('mongodb').ObjectID;
+var db = mongo.db("mongodb://localhost:27017/nodetest", {native_parser:true});
+
+// bind method
+db.bind("users");
+
+// Authentication/Login resources
+// http://miamicoder.com/2014/using-mongodb-and-mongoose-for-user-registration-login-and-logout-in-a-mobile-application/
+
+
+// notes: ideally want to use all data objects on server instead of client.
+
 /*
  * GET userlist.
+ *
  */
 router.get('/userlist', function(req, res) {
-  var db = req.db;
-  db.collection('users').find().toArray(function (err, items) {
-    res.json(items);
+  db.users.find().toArray(function (err, items) {
+    var userArr = [];
+    for(var i = 0; i < items.length; i++){
+      userArr.push(new coreData.User(items[i]));
+    }
+    res.json(userArr);
   });
 });
 
 /*
- * GET userlist/uid : retrieves a user given their uid
+ * GET active/online userlist.
+ *
+ */
+router.get('/userlist/online', function(req, res) {
+  db.users.find({"online":"true", "_id":{ $ne: new ObjectID( res.body.uid ) } }).toArray(function (err, items) {
+    var userArr = [];
+    for(var i = 0; i < items.length; i++){
+      userArr.push(new coreData.User(items[i]));
+    }
+    res.json(userArr);
+  });
+});
+
+
+router.getOnlineUsers = function(_data, _actions){
+  db.users.find({"online":"true", "_id":{ $ne: new ObjectID( _data.uid ) } }).toArray(function (err, items) {
+    var userArr = [];
+    for(var i = 0; i < items.length; i++){
+      userArr.push(new coreData.User(items[i]));
+    }
+    _actions.success(userArr);
+  });
+};
+
+/*
+ * GET userlist/username : retrieves a user given their uid
  */
 router.get('/userlist/:username', function(req, res){
-  var db = req.db;
-  db.collection('users').find({"uid":req.params.uid}).toArray(function (err, items) {
+  db.users.find({"username":req.params.username}).toArray(function (err, items) {
     res.json(items[0]);
   });
 });
+
 
 /*
  * DELETE to deleteuser.
@@ -37,8 +81,7 @@ router.delete('/deleteuser/:username', function(req, res) {
    *
    * Then call the methods to perform desired action here
    */
-  var db = req.db;
-  db.collection('users').remove({ 'uid' : req.params.uid }, function(err) {
+  db.users.remove({ 'username' : req.params.username }, function(err) {
     res.send((err === null) ? { msg: '' } : { msg:'error: ' + err });
   });
 });
@@ -51,20 +94,31 @@ router.post('/adduser', function(req, res) {
 
   console.log(user);
 
-  // probably want to pull apart the [req.body] and validate the fields coming in.
+  // check if username exists
+  db.users.find({
+    "username":req.body.username
+  }).toArray(function(err, items){
+    if(err){
+      // error occurred
+      res.json({msg:"Error Signing up"})
+    }else if(items.length <= 0) {
+      // no results :. username doesnt exist yet :. let them sign up
+      var salt = bcrypt.genSaltSync(10);
+      user.password = bcrypt.hashSync(user.password, salt);
+      user.online = "false";
+      console.log("hash value: " + user.password);
 
-  var salt = bcrypt.genSaltSync(10);
-  user.password = bcrypt.hashSync(user.password, salt);
+      db.users.insert(user, function(err, result){
+        res.send(
+          (err === null) ? { msg: 'success' } : { msg: err }
+        );
+      });
 
-  console.log("hash value: " + user.password);
-
-
-
-  req.db.collection('users').insert(user, function(err, result){
-    res.send(
-      (err === null) ? { msg: 'success' } : { msg: err }
-    );
+    }else{
+      res.json({msg:"User with that username already exists"})
+    }
   });
+
 });
 
 
@@ -72,22 +126,55 @@ router.post('/adduser', function(req, res) {
  * POST to validate login.
  */
 router.post('/validateLogin', function(req, res) {
-
-
-  req.db.collection('users').find({
+  db.users.find({
     "username":req.body.username
   }).toArray(function (err, items) {
     if(err){
-      res.json({valid:false});
+      // error occurred
+      res.json( { valid : false } );
     }else if(items.length <= 0) {
-      res.json({valid:false });
+      // no results
+      res.json( { valid : false } );
     }else if( bcrypt.compareSync(req.body.password, items[0].password) ){
-      res.json({valid:true });
+      // found result and password matches
+
+      // update user to show online as true
+      router.setUserOnline(items[0]._id);
+
+      res.json( {valid:true, user:new coreData.User(items[0])} );
     }else{
-      res.json({valid:false});
+      // found result but password doesnt match
+      res.json( { valid : false } );
     }
+    // will want to inset logged in property for user if they are logged in
   })
 });
+
+router.validateLogin = function(_data, _actions){
+  db.users.find({
+    "username":_data.username
+  }).toArray(function (err, items) {
+    if(err){
+      // error occurred
+      _actions.error();
+    }else if(items.length <= 0) {
+      // no results
+      _actions.error();
+    }else if( bcrypt.compareSync(_data.password, items[0].password) ){
+      // found result and password matches
+
+      // update user to show online as true
+      router.setUserOnline(items[0]._id, _data.socketId);
+      items[0].token = constructToken(items[0]._id, _data.socketId); // need to use socket io conn id
+      _actions.success(items[0]);
+    }else{
+      // found result but password doesnt match
+      _actions.error();
+    }
+    // will want to inset logged in property for user if they are logged in
+  });
+};
+
 
 /*
  * Token test
@@ -104,7 +191,7 @@ router.get('/validateToken/:token',function(){
   var token = deconstructToken(req.params.token),
       valid = false;
   console.log(token);
-  if( validateToken(token) ){
+  if( router.validateToken(token) ){
     valid = true;
   }
   res.send("token is valid: " + valid);
@@ -112,36 +199,70 @@ router.get('/validateToken/:token',function(){
 
 
 
-function validateToken(_token){
-  var valid = false;
+router.validateToken = function(_data, _actions){
 
-  // time of token is less than 30 seconds
-  if(_token.timestamp ){
-    valid = true;
-  }
-  return valid;
-}
+  var token = deconstructToken(_data.token);
+  // Would normally check if time of token is less than 30 seconds
+  // but since im using socket.io im using this for checking to make
+  // sure a user is logged in already when the page loads.
 
-var IP_BASE = 8,
-    USERID_BASE = 6,
+  console.log(token);
+  // get userObj from userId
+  db.users.find({
+    "_id":new ObjectID(token.userId)
+  }).toArray(function (err, items) {
+    // If there was a result ( userId from token matches one in DB )
+    if(items[0]){
+      // if the socketId is the same
+      if(items[0].socketId == token.socketId) {
+        var newToken = constructToken(items[0]._id, _data.socketId); // have to update because of socketId
+        router.setUserOnline(
+          items[0]._id,
+          _data.socketId,
+          newToken
+        ); // need to use socket io conn id);
+        items[0].token = newToken;
+        _actions.success(items[0]);
+      }else{
+        _actions.error();
+      }
+    }else{
+      _actions.error();
+    }
+
+  });
+
+};
+
+var USERID_BASE = 6,
+    //SOCKET_BASE = 8,
+    //IP_BASE = 8,
     TIMESTAMP_BASE = 16,
-    IP_MOD = 4,
+    //IP_MOD = 4,
+    SOCKET_MOD = 4,
     TIMESTAMP_MOD = 2,
-    IP_LENGTH = 13,
+    //IP_LENGTH = 13,
+    SOCKET_LENGTH = 20,
+    USERID_LENGTH = 24,
     TIMESTAMP_LENGTH = 11;
 
-function constructToken(){
-  var ipAddress = formatIP(getIPAddress());
-  var userId = getUserID();
-  var timestamp = getTimestamp();
+function constructToken(_userId, _socketId){
 
+  //var ipAddress = formatIP(getIPAddress());
+  //var userId = getUserID();
+  var socketId = _socketId;
+  var userId = _userId;
+  var timestamp = getTimestamp();
+  console.log(" socketId: " + _socketId + "userId: " + _userId + " timestamp " + timestamp);
   //convert bases
-  ipAddress = base.decToGeneric(parseInt(ipAddress), IP_BASE);
-  userId = base.decToGeneric(parseInt(userId), USERID_BASE);
+  //ipAddress = base.decToGeneric(parseInt(ipAddress), IP_BASE);
+  //socketId = base.decToGeneric(parseInt(socketId), SOCKET_BASE);
+  //userId = base.decToGeneric(parseInt(userId), USERID_BASE);
   timestamp = base.decToGeneric(parseInt(timestamp), TIMESTAMP_BASE);
 
   // zip them together
-  return zip({ipAddress:ipAddress, userId:userId, timestamp:timestamp});
+  //return zip({ipAddress:ipAddress, userId:userId, timestamp:timestamp});
+  return zip({socketId:socketId, userId:userId, timestamp:timestamp});
 }
 
 function deconstructToken(_token){
@@ -150,8 +271,9 @@ function deconstructToken(_token){
   // unbase them and return as deconstruct
 
   return {
-    ipAddress: base.genericToDec(parseInt(unzippedToken.ipAddress), IP_BASE),
-    userId: base.genericToDec(parseInt(unzippedToken.userId), USERID_BASE),
+    //ipAddress: base.genericToDec(parseInt(unzippedToken.ipAddress), IP_BASE),
+    socketId: unzippedToken.socketId,
+    userId: unzippedToken.userId,
     timestamp: base.genericToDec(unzippedToken.timestamp, TIMESTAMP_BASE)
   };
 }
@@ -159,48 +281,88 @@ function deconstructToken(_token){
 
 function zip(_tokenData){
   // more complex but i dont love it yet
-  var ipStart = (_tokenData.ipAddress).substring(0,IP_MOD),
-      ipEnd = (_tokenData.ipAddress).substring(IP_MOD, (_tokenData.ipAddress).length),
+  var socketStart = (_tokenData.socketId).substring(0,SOCKET_MOD),
+      //ipStart = (_tokenData.ipAddress).substring(0,IP_MOD),
+      //ipEnd = (_tokenData.ipAddress).substring(IP_MOD, (_tokenData.ipAddress).length),
+      socketEnd = (_tokenData.socketId).substring(SOCKET_MOD, (_tokenData.socketId).length),
       timestampStart = (_tokenData.timestamp).substring(0,TIMESTAMP_MOD),
       timestampEnd = (_tokenData.timestamp).substring(TIMESTAMP_MOD, (_tokenData.timestamp).length);
 
   // old way - keep it simple first
   //return _tokenData.ipAddress  +  _tokenData.timestamp +  _tokenData.userId;
 
-  var test = ipStart + timestampStart + ipEnd + timestampEnd + _tokenData.userId;
+  //var test = ipStart + timestampStart + ipEnd + timestampEnd + _tokenData.userId;
+  var test = socketStart + timestampStart + socketEnd + timestampEnd + _tokenData.userId;
   var salt = bcrypt.genSaltSync(10);
   var hash = bcrypt.hashSync(test, salt);
 
-  console.log("hash value: " + hash);
+  //console.log("hash value: " + hash);
+  //console.log("Validate Hash: " + bcrypt.compareSync(test, hash) );
 
-  console.log("Validate Hash: " + bcrypt.compareSync(test, hash) );
-
-  return ipStart + timestampStart + ipEnd + timestampEnd + _tokenData.userId;
+  //return ipStart + timestampStart + ipEnd + timestampEnd + _tokenData.userId;
+  console.log(socketStart + timestampStart + socketEnd + timestampEnd + _tokenData.userId);
+  return socketStart + timestampStart + socketEnd + timestampEnd + _tokenData.userId;
 }
 
 function unzip(_tokenData){
   return {
-    ipAddress:
-      _tokenData.substring(0, IP_MOD) +
-      _tokenData.substring( (IP_MOD + TIMESTAMP_MOD), ((IP_MOD + TIMESTAMP_MOD) + (IP_LENGTH - IP_MOD)) ),
+    //ipAddress:
+      //_tokenData.substring(0, IP_MOD) +
+      //_tokenData.substring( (IP_MOD + TIMESTAMP_MOD), ((IP_MOD + TIMESTAMP_MOD) + (IP_LENGTH - IP_MOD)) ),
+    socketId:
+      _tokenData.substring(0, SOCKET_MOD) +
+      _tokenData.substring( (SOCKET_MOD + TIMESTAMP_MOD), ((SOCKET_MOD + TIMESTAMP_MOD) + (SOCKET_LENGTH - SOCKET_MOD)) ),
     timestamp:
-      _tokenData.substring( IP_MOD, (IP_MOD + TIMESTAMP_MOD) ) +
+      //_tokenData.substring( IP_MOD, (IP_MOD + TIMESTAMP_MOD) ) +
+      //_tokenData.substring(
+      //  ((IP_MOD + TIMESTAMP_MOD) + (IP_LENGTH - IP_MOD)),
+      //  ((IP_MOD + TIMESTAMP_MOD)+ (IP_LENGTH - IP_MOD)) + ( TIMESTAMP_LENGTH - TIMESTAMP_MOD)
+      //),
+      _tokenData.substring( SOCKET_MOD, (SOCKET_MOD + TIMESTAMP_MOD) ) +
       _tokenData.substring(
-        ((IP_MOD + TIMESTAMP_MOD) + (IP_LENGTH - IP_MOD)),
-        ((IP_MOD + TIMESTAMP_MOD)+ (IP_LENGTH - IP_MOD)) + ( TIMESTAMP_LENGTH - TIMESTAMP_MOD)
+        ((SOCKET_MOD + TIMESTAMP_MOD) + (SOCKET_LENGTH - SOCKET_MOD)),
+        ((SOCKET_MOD + TIMESTAMP_MOD)+ (SOCKET_LENGTH - SOCKET_MOD)) + ( TIMESTAMP_LENGTH - TIMESTAMP_MOD)
       ),
-    userId:_tokenData.substr(_tokenData.length - 2)
+    userId:_tokenData.substr(_tokenData.length - USERID_LENGTH)
   };
 }
+
+function getTimestamp(){
+  return new Date().getTime();
+}
+
+
+router.setUserOnline = function(_userId, _socketId, _token){
+  db.users.update(
+    {_id:_userId},
+    {'$set':{online:"true", socketId:_socketId, token:_token}},
+    function(err) {
+      if (err) throw err;
+      console.log('Updated!');
+    }
+  );
+};
+
+router.setUserOffline = function(_socketId){
+  db.users.update(
+    {socketId:_socketId},
+    {'$set':{online:"false"}},
+    function(err) {
+      if (err) throw err;
+      console.log('Updated!');
+    }
+  );
+};
+
+/*
+OLD CODE
 
 function getUserID(){
   // hardcoded for now will pull from db later
   return 13;
 }
 
-function getTimestamp(){
-  return new Date().getTime();
-}
+
 
 function getIPAddress(){
   var os = require('os');
@@ -220,7 +382,7 @@ function getIPAddress(){
 
 function formatIP(_ip){
   var ipArr = _ip.split("."),
-      formattedIpArr = [];
+    formattedIpArr = [];
 
   for(var i = 0; i < ipArr.length; i++){
     switch(ipArr[i].length){
@@ -238,5 +400,7 @@ function formatIP(_ip){
 
   return formattedIpArr.join("");
 }
+*/
+
 
 module.exports = router;

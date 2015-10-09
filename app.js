@@ -7,14 +7,166 @@ var bodyParser = require('body-parser');
 var passport = require('passport');
 var Strategy = require('passport-local').Strategy;
 
+// data objects
+var coreData = require('./coreData/coreData.js');
+
 // Database
 var mongo = require('mongoskin');
 var db = mongo.db("mongodb://localhost:27017/nodetest", {native_parser:true});
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var game = require('./routes/game');
+var lobby = require('./routes/lobby');
+var chat = require('./routes/chat');
 
 var app = express();
+
+server = app.listen(3000);
+var io = require('socket.io').listen(server);
+
+var loginIO = io
+  .of('/login')
+  .on("connection", function(socket){
+    var loggedIn = false,
+        socketId = socket.id;
+    console.log(socketId);
+    socket.on('validateLogin', function(data, fn){
+      data.socketId = socketId;
+      users.validateLogin(data, {
+        success:function(user){
+          loggedIn = true;
+          fn({valid:true, user:new coreData.User(user)});
+        },
+        error:function(){
+          fn({valid:false});
+        }
+      })
+    });
+
+    socket.on('validateToken', function(data, fn){
+      data.socketId = socketId; // needed for setUserOnline(_userId, _socketId)
+      users.validateToken(data, {
+        success:function(user){
+          fn({valid:true, user:new coreData.User(user)});
+        },
+        error:function(){
+          fn({valid:false});
+        }
+      })
+    });
+
+    socket.on('getOnlineUsers', function(data, fn){
+
+      users.getOnlineUsers(data, {
+        success:function(res){
+          fn({msg:'success', data:res});
+        },
+        error:function(){
+          fn({msg:'error'});
+        }
+      });
+
+    });
+
+    socket.on('getChallenges',function(data, fn){
+
+      lobby.getChallenges(data, {
+        success:function(res){
+          fn({msg:'success', data:res});
+        },
+        error:function(){
+          fn({msg:'error'});
+        }
+      });
+
+    });
+
+
+    socket.on('getSentChallenges',function(data, fn){
+
+      lobby.getSentChallenges(data, {
+        success:function(res){
+          fn({msg:'success', data:res});
+        },
+        error:function(){
+          fn({msg:'error'});
+        }
+      });
+
+    });
+
+  });
+
+
+var gameIO = io
+  .of('/game')
+  .on("connection", function(socket){
+    var loggedIn = false;
+    socket.on('createGame', function(data, fn){
+      // send in userId, challengeobj?
+      game.createGame(data, {
+        success:function(user){
+          loggedIn = true;
+          fn({valid:true, data:data});
+        },
+        error:function(){
+          fn({valid:false});
+        }
+      })
+    });
+
+  });
+
+// use namespaces : turn this into a dispatch
+io.on('connection', function(socket){
+  var socketId = socket.id;
+  var clientIp = socket.request.connection.remoteAddress;
+  console.log("user connected from " + clientIp);
+
+  socket.on('validate login', function(data){
+
+  });
+
+  socket.on('chatMsg', function (data, fn) {
+    chat.sendChat(data, {
+      success:function(){
+        fn({msg:'success'});
+      },
+      error:function(){
+        fn({msg:'error'});
+      }
+    });
+  });
+
+  socket.on('disconnect', function () {
+    console.log('user disconnected - ID: ' + socketId);
+    users.setUserOffline(socketId);
+
+    // if in game
+      // set game to inactive
+      // notify players
+
+    // no matter what - set user.online = false
+
+
+
+    // general comments
+    /*
+
+    use id for users ( sending challenges)
+
+    finish accept and decline challenge
+
+
+     */
+
+
+  });
+});
+
+
+
 
 // view engine setup
 
@@ -36,9 +188,11 @@ app.use(function(req,res,next){
     next();
 });
 
-
 app.use('/', routes);
 app.use('/users', users);
+app.use('/chat', chat);
+app.use('/game', game);
+app.use('/lobby', lobby);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -46,6 +200,7 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
 
 // error handlers
 
@@ -71,7 +226,6 @@ app.use(function(err, req, res, next) {
   });
 });
 
-
 module.exports = app;
 
 
@@ -83,4 +237,8 @@ module.exports = app;
  * git ci -m "commit msg"
  * git push origin HEAD:express-new
  *
+ *
+ * How to alias:
+ *
+ *  git config --global alias.co checkout
   */

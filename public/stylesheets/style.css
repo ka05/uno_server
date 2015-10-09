@@ -20,12 +20,33 @@
   -webkit-font-smoothing: antialiased;
 }
 
+.bg-gray{
+  background:#ddd;
+}
+
+
 /* MAIN PAGE */
 
 #main-btn-cont{
   width:20em;
   padding:20em 0;
   margin:0 auto;
+}
+
+.btn-dk{
+  background:rgba(0,0,0,.2);
+  border:2px solid #fff;
+  margin-bottom:1em;
+}
+
+.btn-dk:hover{
+  background: rgba(255,255,255,.8);
+  color:#000;
+}
+
+.btn-dk:focus, .btn-main:focus {
+  outline: none;
+  background-color: rgba(255,255,255,.8);
 }
 
 .btn-main{
@@ -124,3 +145,126 @@ nav{
 .error-msg{
   color:red;
 }
+
+.bg-main{
+  background: url("../media/cards/bg_main.svg") no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  min-height:700px;
+}
+
+.bg-dk-cover{
+  background: rgba(0,0,0,.4);
+}
+
+.bg-dk-cover .card-title{
+  color:#FFF;
+}
+
+.bg-dk-cover .input-field{
+  color:#FFF;
+}
+
+.card-heading{
+  border-bottom: 1px solid #FFF;
+}
+
+/*OVERRIDE FORM ELEMENTS*/
+
+/* label color */
+.input-field label {
+  color: #FFF;
+}
+/* label focus color */
+.input-field input[type=text]:focus + label {
+  color: #FFF;
+}
+/* label underline focus color */
+.input-field input[type=text]:focus {
+  border-bottom: 1px solid #FFF;
+  box-shadow: 0 1px 0 0 #FFF;
+}
+/* valid color */
+.input-field input[type=text].valid {
+  border-bottom: 1px solid #FFF;
+  box-shadow: 0 1px 0 0 #FFF;
+}
+/* invalid color */
+.input-field input[type=text].invalid {
+  border-bottom: 1px solid #FFF;
+  box-shadow: 0 1px 0 0 #FFF;
+}
+/* icon prefix focus color */
+.input-field .prefix.active {
+  color: #FFF;
+}
+
+
+/* GAME VIEW */
+#game-view{
+  width:100%;
+}
+
+#game-card-view{
+  width:180px;
+  height:90px;
+  position:relative;
+  margin:5em auto;
+}
+
+#game-card-view #current-gc-view{
+  position:absolute;
+  left:80px;
+  z-index: 99;
+}
+
+#game-card-view #previous-gc-view{
+  position: absolute;
+  left:100px;
+}
+
+.card-view{
+  float:left;
+}
+
+#deck-view{
+  position: absolute;
+  left: 0;
+}
+
+/* GAME VIEW - PLAYER VIEW */
+#players{
+  background: #ddd;
+  height:100px;
+}
+
+.player-wrap{
+  position:relative;
+  height: 5em;
+  width:5em;
+  margin:.6em 1em;
+  float: left;
+}
+
+.player-wrap img{
+  border-radius: 5em;
+}
+
+.hand-count{
+  background:red;
+  border-radius:3px;
+  color:#fff;
+  position:absolute;
+  top:0px;
+  right:0px;
+  padding:2px 6px;
+}
+
+/* PLAYER'S HAND SECTION */
+#player-hand{
+  background: #ddd;
+  height:110px;
+}
+

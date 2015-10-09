@@ -1,0 +1,428 @@
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+nav{
+  background: rgba(0,0,0,.9);
+}
+
+.brand-logo{
+  margin-left:2em;
+}
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  // Refer to this later when this is uploaded on a server:
+  // http://google.github.io/material-design-icons/#icon-font-for-the-web
+  //src: local('Material Icons'), local('MaterialIcons-Regular'), url(materialize/font/material-design-icons/Material-Design-Icons.woff2) format('woff2');
+  src: local('Material Icons'), local('MaterialIcons-Regular'), url(http://fonts.gstatic.com/s/materialicons/v7/2fcrYFNaTjcS6g4U3t-Y5ZjZjT5FdEJ140U2DJYC3mY.woff2) format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  word-wrap: normal;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+// Utilty
+.clearfix{
+  clear:both;
+}
+
+// CONTROLS: Buttons, Form inputs, etc.
+input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
+  background: rgba(0,0,0,.0);
+}
+
+.btn-dk{
+  background:rgba(0,0,0,.2);
+  border:2px solid #fff;
+  margin-bottom:1em;
+
+  &:hover{
+    background: rgba(255,255,255,.8);
+    color:#000;
+  }
+  &:focus{
+    outline: none;
+    background-color: rgba(255,255,255,.8);
+  }
+}
+
+.btn-lt{
+  background:rgba(255,255,255,.8);
+  color:#000;
+  margin-bottom:1em;
+
+  &:hover{
+    background: rgba(0,0,0,.2);
+    color:#FFF;
+  }
+  &:focus{
+    outline: none;
+    background-color: rgba(0,0,0,.2);
+    color:#FFF;
+  }
+}
+
+
+.btn-main{
+  width:100%;
+  background:rgba(0,0,0,.8);
+  //border:2px solid #fff;
+  margin-bottom:1em;
+  padding:6px 0;
+  font-size: 24px;
+  height:auto;
+
+  &:hover{
+    background: rgba(255,255,255,.8);
+    color:#000;
+  }
+  &:focus{
+    outline: none;
+    background-color: rgba(255,255,255,.8);
+  }
+}
+
+/* OVERRIDE FORM ELEMENTS COLORING */
+@inputColor:#fff;
+
+/* label focus color */
+.login-card .input-field{
+  /* label color */
+  label {
+    color: @inputColor;
+  }
+  input[type=text], input[type=password], input[type=email]{
+
+    &:focus + label {
+      color: @inputColor;
+    }
+
+    /* label underline focus color */
+    &:focus {
+      border-bottom: 1px solid @inputColor;
+      box-shadow: 0 1px 0 0 @inputColor;
+    }
+
+    /* valid color */
+    &.valid {
+      border-bottom: 1px solid @inputColor;
+      box-shadow: 0 1px 0 0 @inputColor;
+    }
+
+    /* invalid color */
+    &.invalid {
+      border-bottom: 1px solid @inputColor;
+      box-shadow: 0 1px 0 0 @inputColor;
+    }
+  }
+
+  /* icon prefix focus color */
+  .prefix.active {
+    color: #FFF;
+  }
+}
+
+
+/* GAME VIEW */
+#game-view{
+  width:100%;
+}
+
+#game-card-view{
+  width:180px;
+  height:90px;
+  position:relative;
+  margin:5em auto;
+
+  #current-gc-view{
+    position:absolute;
+    left:80px;
+    z-index: 99;
+  }
+  #previous-gc-view{
+    position: absolute;
+    left:100px;
+  }
+
+}
+
+.card-view{
+  float:left;
+}
+
+#deck-view{
+  position: absolute;
+  left: 0;
+}
+
+
+/* GAME VIEW - PLAYERS VIEW */
+#players{
+  background: #ddd;
+  height:100px;
+}
+
+.player-wrap{
+  position:relative;
+  height: 5em;
+  width:5em;
+  margin:.6em 1em;
+  float: left;
+
+  img{
+    border-radius: 5em;
+  }
+}
+
+.hand-count{
+  background:red;
+  border-radius:3px;
+  color:#fff;
+  position:absolute;
+  top:0px;
+  right:0px;
+  padding:2px 6px;
+}
+
+// User Section
+#player-hand{
+  background: #ddd;
+  height:110px;
+}
+
+.card-cont{
+  float:left;
+  margin:.6em .1em;
+}
+
+/* MAIN PAGE */
+.bg-main{
+  //padding:2em 0;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ea7e31+0,e2420d+100 */
+  background: #ea7e31; /* Old browsers */
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPHJhZGlhbEdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNzUlIj4KICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNlYTdlMzEiIHN0b3Atb3BhY2l0eT0iMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZTI0MjBkIiBzdG9wLW9wYWNpdHk9IjEiLz4KICA8L3JhZGlhbEdyYWRpZW50PgogIDxyZWN0IHg9Ii01MCIgeT0iLTUwIiB3aWR0aD0iMTAxIiBoZWlnaHQ9IjEwMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+  background: -moz-radial-gradient(center, ellipse cover,  #ea7e31 0%, #e2420d 100%); /* FF3.6+ */
+  background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,#ea7e31), color-stop(100%,#e2420d)); /* Chrome,Safari4+ */
+  background: -webkit-radial-gradient(center, ellipse cover,  #ea7e31 0%,#e2420d 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-radial-gradient(center, ellipse cover,  #ea7e31 0%,#e2420d 100%); /* Opera 12+ */
+  background: -ms-radial-gradient(center, ellipse cover,  #ea7e31 0%,#e2420d 100%); /* IE10+ */
+  background: radial-gradient(ellipse at center,  #ea7e31 0%,#e2420d 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ea7e31', endColorstr='#e2420d',GradientType=1 ); /* IE6-8 fallback on horizontal gradient */
+}
+
+#home-bg{
+  background: url("../media/cards/uno_bg.svg") no-repeat;
+  //-webkit-background-size: cover;
+  //-moz-background-size: cover;
+  //-o-background-size: cover;
+  //background-size: cover;
+  background-size:100%;
+  width:60%;
+  margin:0 auto;
+}
+
+#main-btn-cont{
+  width:20em;
+  padding:20em 0;
+  margin:0 auto;
+}
+
+// Login/Sign Up Section
+.bg-dk-cover{
+  background: rgba(0,0,0,.4);
+
+  .card-title{
+    color:#FFF;
+  }
+  .input-field{
+    color:#FFF;
+  }
+}
+
+.card-heading{
+  border-bottom: 1px solid #FFF;
+}
+
+// Mobile Nav
+#mobile-nav{
+  i{
+    display: inline-block;
+  }
+  li{
+    color:#333;
+
+    &:hover{
+      cursor:pointer;
+      color: #ee280e;
+    }
+  }
+}
+
+// Profile
+#img-cont{
+  margin: 0 auto;
+  width: 200px;
+  height:200px;
+  /*padding-top: 75px;*/
+  /*border:2px solid #FFF;*/
+  border-radius: 100px;
+  /*background: rgba(255,255,255,.6);*/
+}
+.progressbar-text{
+  top:85% !important;
+  font-size:1.6em;
+}
+
+.add-photo-txt{
+  font-size: 30px;
+  text-align: center;
+  margin-top: 65px;
+}
+
+// Chat section
+#chat-window{
+  //margin:1em;
+  background: #FFF;
+  #chat-cont{
+    min-height: 200px;
+    height: 200px;
+    overflow-y: scroll;
+
+    .card-panel{
+      padding:.5em 1em;
+    }
+  }
+}
+
+#chat-msg{
+  margin: 0 0 5px 0;
+  height:2.2rem;
+}
+
+
+// Background Colors
+.bg-gray{
+  background:#ddd;
+}
+.bg-white{
+  background: #fff;
+}
+.dk-gray{
+  color:#333;
+}
+.error-msg{
+  color:red;
+}
+
+.me-txt{
+  color:orange;
+}
+.error-txt{
+  background: #FFF;
+  color:darkred;
+  padding:1em;
+}
+
+.chat-btn{
+  height: 54px;
+  padding:0;
+  color:#000;
+  width:6em;
+  i{
+    //padding:.2em;
+    padding-top: .22em;
+    font-size: 2.6rem;
+  }
+  &:hover{
+    color:#CCC;
+    cursor: pointer;
+  }
+  &:focus{
+    outline: none;
+    background-color: rgba(255,255,255,.6);
+    color:#CCC;
+  }
+}
+
+#chat-cont{
+  background:#ddd;
+}
+
+.login-card{
+  width:60%;
+  margin:0 auto;
+  padding:.2em;
+  background:rgba(0,0,0,0);
+  -webkit-transition: all 500ms ease;
+  -moz-transition: all 500ms ease;
+  -ms-transition: all 500ms ease;
+  -o-transition: all 500ms ease;
+  transition: all 500ms ease;
+}
+.main-wrap{
+  padding:2em 0;
+}
+
+
+.pw-90{
+  width: 90%;
+}
+.pw-10{
+  width: 10%;
+}
+
+.challenge-heading{
+  font-size:2em;
+  text-align: center;
+  h6{
+    font-weight: bold;
+  }
+}
+
+.challenge-text{
+  cursor: pointer;
+  color:#333333 !important;
+}
+
+
+@media only screen and (max-width: 601px){
+  .login-card {
+    width: 90%;
+    margin: 0 auto;
+    padding: .2em;
+    background: rgba(0, 0, 0, 0);
+  }
+}
+
+.cancelled-item{
+  border-left:2px solid #cc0000;
+}
+.accepted-item{
+  border-left:2px solid #00C853;
+  &:hover{
+    background: rgba(0, 200, 83, .5);
+  }
+}
+.declined-item{
+  border-left:2px solid #ea7e31;
+}
+.pending-item{
+  border-left:2px solid #333;
+}
