@@ -30,7 +30,7 @@ var loginIO = io
   .on("connection", function(socket){
     var loggedIn = false,
         socketId = socket.id;
-    console.log(socketId);
+    console.log("socketId: " + socketId);
     socket.on('validateLogin', function(data, fn){
       data.socketId = socketId;
       users.validateLogin(data, {
@@ -59,6 +59,68 @@ var loginIO = io
     socket.on('getOnlineUsers', function(data, fn){
 
       users.getOnlineUsers(data, {
+        success:function(res){
+          fn({msg:'success', data:res});
+        },
+        error:function(){
+          fn({msg:'error'});
+        }
+      });
+
+    });
+
+    socket.on('chatMsg', function (data, fn) {
+      chat.sendChat(data, {
+        success:function(){
+          fn({msg:'success'});
+        },
+        error:function(){
+          fn({msg:'error'});
+        }
+      });
+    });
+
+    socket.on('getChat', function (data, fn) {
+      chat.getChat(data, {
+        success:function(data){
+          fn({msg:'success', data:data});
+        },
+        error:function(){
+          fn({msg:'error'});
+        }
+      });
+    });
+
+
+    socket.on('sendChallenge',function(data, fn){
+
+      lobby.sendChallenge(data, {
+        success:function(res){
+          fn({msg:'success', data:res});
+        },
+        error:function(){
+          fn({msg:'error'});
+        }
+      });
+
+    });
+
+    socket.on('handleChallenge',function(data, fn){
+
+      lobby.handleChallenge(data, {
+        success:function(res){
+          fn({msg:'success', data:res});
+        },
+        error:function(){
+          fn({msg:'error'});
+        }
+      });
+
+    });
+
+    socket.on('getChallenge',function(data, fn){
+
+      lobby.getChallenge(data, {
         success:function(res){
           fn({msg:'success', data:res});
         },
@@ -104,14 +166,117 @@ var gameIO = io
   .on("connection", function(socket){
     var loggedIn = false;
     socket.on('createGame', function(data, fn){
-      // send in userId, challengeobj?
+      // send in challengeobj
       game.createGame(data, {
-        success:function(user){
-          loggedIn = true;
-          fn({valid:true, data:data});
+        success:function(game){
+          fn({msg:"success", data:game});
         },
-        error:function(){
-          fn({valid:false});
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+    socket.on('getGameByChallengeId', function(data, fn){
+      // send in challengeobj
+      game.getGameByChallengeId(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+    socket.on('getGameById', function(data, fn){
+      // send in challengeobj
+      game.getGameById(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+    socket.on('drawCard', function(data, fn){
+      // send in challengeobj
+      game.drawCard(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+    socket.on('quitGame', function(data, fn){
+      // send in challengeobj
+      game.quitGame(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+
+    socket.on('checkPlayersInGameRoom', function(data, fn){
+      // send in challengeobj
+      game.checkPlayersInGameRoom(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+
+    socket.on('setPlayerInGame', function(data, fn){
+      // send in challengeobj
+      game.setPlayerInGame(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+
+    socket.on('validateMove', function(data, fn){
+      // send in card, playerId, gameId
+      game.validateMove(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+
+    socket.on('sayUno', function(data, fn){
+      // send in card, playerId, gameId
+      game.sayUno(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+
+    socket.on('challengeUno', function(data, fn){
+      // send in card, playerId, gameId
+      game.challengeUno(data, {
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
         }
       })
     });
@@ -128,16 +293,6 @@ io.on('connection', function(socket){
 
   });
 
-  socket.on('chatMsg', function (data, fn) {
-    chat.sendChat(data, {
-      success:function(){
-        fn({msg:'success'});
-      },
-      error:function(){
-        fn({msg:'error'});
-      }
-    });
-  });
 
   socket.on('disconnect', function () {
     console.log('user disconnected - ID: ' + socketId);

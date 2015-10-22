@@ -19,23 +19,53 @@ nav{
   font-weight: 400;
   // Refer to this later when this is uploaded on a server:
   // http://google.github.io/material-design-icons/#icon-font-for-the-web
-  //src: local('Material Icons'), local('MaterialIcons-Regular'), url(materialize/font/material-design-icons/Material-Design-Icons.woff2) format('woff2');
-  src: local('Material Icons'), local('MaterialIcons-Regular'), url(http://fonts.gstatic.com/s/materialicons/v7/2fcrYFNaTjcS6g4U3t-Y5ZjZjT5FdEJ140U2DJYC3mY.woff2) format('woff2');
+  src: url(http://localhost:3000/css/font/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src: local('Material Icons'),
+    local('MaterialIcons-Regular'),
+    url(http://localhost:3000/css/font/MaterialIcons-Regular.woff2) format('woff2'),
+    url(http://localhost:3000/css/font/MaterialIcons-Regular.woff) format('woff'),
+    url(http://localhost:3000/css/font/MaterialIcons-Regular.ttf) format('truetype');
+
+  //src: local('Material Icons'), local('MaterialIcons-Regular'), url(http://fonts.gstatic.com/s/materialicons/v7/2fcrYFNaTjcS6g4U3t-Y5ZjZjT5FdEJ140U2DJYC3mY.woff2) format('woff2');
 }
 
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
+  font-size: 24px;  /* Preferred icon size */
   display: inline-block;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
   word-wrap: normal;
-  -webkit-font-feature-settings: 'liga';
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
   -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
 }
+
+
+// override navigation
+#nav-mobile{
+  li{
+    &:hover{
+      background:rgba(255,255,255,.3);
+    }
+  }
+}
+
 
 // Utilty
 .clearfix{
@@ -80,7 +110,7 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 
 
 .btn-main{
-  width:100%;
+
   background:rgba(0,0,0,.8);
   //border:2px solid #fff;
   margin-bottom:1em;
@@ -97,6 +127,17 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
     background-color: rgba(255,255,255,.8);
   }
 }
+
+.btn-sm{
+  font-size: 16px;
+  padding: 0 2rem;
+}
+
+.col-100p{
+  width:100%;
+}
+
+
 
 /* OVERRIDE FORM ELEMENTS COLORING */
 @inputColor:#fff;
@@ -145,8 +186,8 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 #game-card-view{
-  width:180px;
-  height:90px;
+  width:160px;
+  height:4em;
   position:relative;
   margin:5em auto;
 
@@ -172,6 +213,7 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 
+
 /* GAME VIEW - PLAYERS VIEW */
 #players{
   background: #ddd;
@@ -187,7 +229,15 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 
   img{
     border-radius: 5em;
+    &.my-turn{
+      border:1px solid limegreen;
+      .generate-all-browser-animation(my-turn-flashing 1s ease-in-out infinite alternate);
+    }
   }
+}
+
+#action-bar{
+  margin:0 1em;
 }
 
 .hand-count{
@@ -195,15 +245,66 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   border-radius:3px;
   color:#fff;
   position:absolute;
-  top:0px;
-  right:0px;
+  top:0;
+  right:-5px;
   padding:2px 6px;
 }
 
+.player-username{
+  background:rgba(0,0,0,.8);
+  border-radius:3px;
+  color:#FFF;
+  position:absolute;
+  bottom:0;
+  width:100%;
+  text-align: center;
+  padding:2px 6px;
+
+  &.my-turn{
+    background:limegreen;
+  }
+}
+
+.curr-player-username{
+  background:rgba(0,0,0,.8);
+  border-radius:0 0 3px 3px;
+
+  color:#FFF;
+  text-align: center;
+  //width: 20%;
+  padding:2px 6px;
+  margin:0 auto;
+
+  &.my-turn{
+    border-top: 2px solid lime;
+  }
+}
+
+
 // User Section
 #player-hand{
-  background: #ddd;
-  height:110px;
+  background: rgba(255,255,255, .6);
+  margin-bottom:0;
+  overflow-x: scroll;
+
+  &.my-turn{
+    .generate-all-browser-animation(my-turn-flashing 1s ease-in-out infinite alternate);
+  }
+
+  .card-view{
+    margin:.8em .2em;
+  }
+}
+
+.chat-icon-li{
+  height:64px;
+}
+
+#in-game-chat-btn{
+  font-size: 2rem;
+  width:2em;
+  padding-top:.5em;
+  cursor: pointer;
 }
 
 .card-cont{
@@ -297,10 +398,11 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 // Chat section
-#chat-window{
+#chat-window, #game-chat-window{
   //margin:1em;
   background: #FFF;
-  #chat-cont{
+  #chat-cont, #game-chat-cont{
+    background:#ddd;
     min-height: 200px;
     height: 200px;
     overflow-y: scroll;
@@ -309,12 +411,12 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
       padding:.5em 1em;
     }
   }
+  #chat-msg, #game-chat-msg{
+    margin: 0 0 5px 0;
+    height:2.2rem;
+  }
 }
 
-#chat-msg{
-  margin: 0 0 5px 0;
-  height:2.2rem;
-}
 
 
 // Background Colors
@@ -361,9 +463,6 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   }
 }
 
-#chat-cont{
-  background:#ddd;
-}
 
 .login-card{
   width:60%;
@@ -399,8 +498,50 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 .challenge-text{
   cursor: pointer;
   color:#333333 !important;
+  a{
+    color:#333333 !important;
+
+    &:hover{
+      color:#ccc !important;
+    }
+  }
+  i:hover{
+    cursor: pointer;
+    color:#00C853;
+  }
 }
 
+#inGameChatWindow{
+  position:absolute;
+  top:-2000px;
+  right:0;
+  left:0;
+  z-index:100;
+  border-radius: 3px;
+  -webkit-transition: all 0.5s;
+  -moz-transition: all 0.5s;
+  transition: all 0.5s;
+
+  &.active{
+    top:64px;
+    right:1em;
+    left:1em;
+  }
+
+}
+
+//#lobby-main{
+//  .collection.with-header .collection-item{
+//    padding:0em;
+//    //i{
+//    //  padding:.5em;
+//    //}
+//    a{
+//      padding:.5em;
+//      display: block;
+//    }
+//  }
+//}
 
 @media only screen and (max-width: 601px){
   .login-card {
@@ -412,17 +553,83 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 .cancelled-item{
-  border-left:2px solid #cc0000;
+  border-left:4px solid #cc0000;
 }
 .accepted-item{
-  border-left:2px solid #00C853;
-  &:hover{
-    background: rgba(0, 200, 83, .5);
-  }
+  border-left:4px solid #00C853;
 }
 .declined-item{
-  border-left:2px solid #ea7e31;
+  border-left:4px solid #ea7e31;
+}
+.ready-item{
+  border-left:4px solid #00C853;
+  .generate-all-browser-transition(all 0.5s);
+  .generate-all-browser-animation(flashing .5s ease-in-out infinite alternate);
+
+  &:hover{
+    //border-left-width: 8px;
+  }
+
 }
 .pending-item{
-  border-left:2px solid #333;
+  border-left:4px solid #333;
+}
+
+
+.active-color-red{
+  background: red;
+}
+.active-color-blue{
+  background: blue;
+}
+.active-color-yellow{
+  background: yellow;
+}
+.active-color-green{
+  background: green;
+}
+
+.generate-all-browser-transition(@val){
+  -webkit-transition: @val;
+  -moz-transition: @val;
+  -o-transition: @val;
+  transition: @val;
+}
+
+.generate-all-browser-animation(@val){
+  -webkit-animation: @val;
+  -moz-animation: @val;
+  -o-animation: @val;
+  animation: @val;
+}
+
+
+// animation for glowing around player whos turn it is
+.generate-keyframes-from-to(my-turn-flashing, { box-shadow: 0px 0px 1px 1px rgba(0, 255, 0, 0.3)}, { box-shadow: 0px 0px 8px 4px rgba(0, 255, 0, 0.6) });
+
+// animation for challenge center to indicate that the game is ready to start
+.generate-keyframes-from-to(flashing, { border-left-color:rgba(0, 200, 83, .5)}, { border-left-color:rgba(0, 180, 90, 1) });
+
+.generate-keyframes-from-to(@name, @fromRule, @toRule){
+  @-webkit-keyframes @name {
+    .generate-from-to(@fromRule, @toRule);
+  }
+  @-moz-keyframes @name {
+    .generate-from-to(@fromRule, @toRule);
+  }
+  @-o-keyframes @name {
+    .generate-from-to(@fromRule, @toRule);
+  }
+  @keyframes @name {
+    .generate-from-to(@fromRule, @toRule);
+  }
+}
+
+.generate-from-to(@fromRule, @toRule){
+  from{
+    @fromRule();
+  }
+  to{
+    @toRule();
+  }
 }

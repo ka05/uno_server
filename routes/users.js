@@ -106,9 +106,10 @@ router.post('/adduser', function(req, res) {
       var salt = bcrypt.genSaltSync(10);
       user.password = bcrypt.hashSync(user.password, salt);
       user.online = "false";
-      console.log("hash value: " + user.password);
+      user.winCount = 0;
+      //console.log("hash value: " + user.password);
 
-      db.users.insert(user, function(err, result){
+      db.users.insert(new coreData.User(user), function(err, result){
         res.send(
           (err === null) ? { msg: 'success' } : { msg: err }
         );
@@ -181,16 +182,14 @@ router.validateLogin = function(_data, _actions){
  */
 router.get('/getToken', function(req, res){
   var token = constructToken();
-  var d_token = deconstructToken(token);
 
-  console.log("Decostructed Token: " + d_token);
   res.json({"token":token});
 });
 
 router.get('/validateToken/:token',function(){
   var token = deconstructToken(req.params.token),
       valid = false;
-  console.log(token);
+
   if( router.validateToken(token) ){
     valid = true;
   }
@@ -206,7 +205,7 @@ router.validateToken = function(_data, _actions){
   // but since im using socket.io im using this for checking to make
   // sure a user is logged in already when the page loads.
 
-  console.log(token);
+  //console.log(token);
   // get userObj from userId
   db.users.find({
     "_id":new ObjectID(token.userId)
@@ -247,13 +246,13 @@ var USERID_BASE = 6,
     TIMESTAMP_LENGTH = 11;
 
 function constructToken(_userId, _socketId){
-
+  console.log(getIPAddress());
   //var ipAddress = formatIP(getIPAddress());
   //var userId = getUserID();
   var socketId = _socketId;
   var userId = _userId;
   var timestamp = getTimestamp();
-  console.log(" socketId: " + _socketId + "userId: " + _userId + " timestamp " + timestamp);
+  //console.log(" socketId: " + _socketId + "userId: " + _userId + " timestamp " + timestamp);
   //convert bases
   //ipAddress = base.decToGeneric(parseInt(ipAddress), IP_BASE);
   //socketId = base.decToGeneric(parseInt(socketId), SOCKET_BASE);
@@ -300,7 +299,7 @@ function zip(_tokenData){
   //console.log("Validate Hash: " + bcrypt.compareSync(test, hash) );
 
   //return ipStart + timestampStart + ipEnd + timestampEnd + _tokenData.userId;
-  console.log(socketStart + timestampStart + socketEnd + timestampEnd + _tokenData.userId);
+  //console.log(socketStart + timestampStart + socketEnd + timestampEnd + _tokenData.userId);
   return socketStart + timestampStart + socketEnd + timestampEnd + _tokenData.userId;
 }
 
@@ -353,6 +352,22 @@ router.setUserOffline = function(_socketId){
     }
   );
 };
+
+function getIPAddress(){
+  var os = require('os');
+
+  var interfaces = os.networkInterfaces();
+  var addresses = [];
+  for (var k in interfaces) {
+    for (var k2 in interfaces[k]) {
+      var address = interfaces[k][k2];
+      if (address.family === 'IPv4' && !address.internal) {
+        addresses.push(address.address);
+      }
+    }
+  }
+  return addresses[0];
+}
 
 /*
 OLD CODE

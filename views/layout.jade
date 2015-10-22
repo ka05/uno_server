@@ -2,54 +2,102 @@ doctype html
 html
     head
         title= title
-        link(rel='stylesheet', href='stylesheets/materialize/bin/materialize.css', media="screen,projection")
-        link(rel='stylesheet', href='/stylesheets/main.css')
+        link(rel="apple-touch-icon", sizes="57x57", href="media/icon/apple-icon-57x57.png")
+        link(rel="apple-touch-icon", sizes="60x60", href="media/icon/apple-icon-60x60.png")
+        link(rel="apple-touch-icon", sizes="72x72", href="media/icon/apple-icon-72x72.png")
+        link(rel="apple-touch-icon", sizes="76x76", href="media/icon/apple-icon-76x76.png")
+        link(rel="apple-touch-icon", sizes="114x114", href="media/icon/apple-icon-114x114.png")
+        link(rel="apple-touch-icon", sizes="120x120", href="media/icon/apple-icon-120x120.png")
+        link(rel="apple-touch-icon", sizes="144x144", href="media/icon/apple-icon-144x144.png")
+        link(rel="apple-touch-icon", sizes="152x152", href="media/icon/apple-icon-152x152.png")
+        link(rel="apple-touch-icon", sizes="180x180", href="media/icon/apple-icon-180x180.png")
+        link(rel="icon", type="image/png", sizes="192x192",  href="media/icon/android-icon-192x192.png")
+        link(rel="icon", type="image/png", sizes="32x32", href="media/icon/favicon-32x32.png")
+        link(rel="icon", type="image/png", sizes="96x96", href="media/icon/favicon-96x96.png")
+        link(rel="icon", type="image/png", sizes="16x16", href="media/icon/favicon-16x16.png")
+        link(rel="manifest", href="media/icon/manifest.json")
+        meta(name="msapplication-TileColor", content="#ffffff")
+        meta(name="msapplication-TileImage", content="media/icon/ms-icon-144x144.png")
+        meta(name="theme-color", content="#ffffff")
+        link(rel='stylesheet', href='css/materialize/bin/materialize.css', media="screen,projection")
+        link(rel='stylesheet', href='/css/main.css')
+        script(src='js/lib/progressbar.min.js')
+
+        script(type="text/javascript", data-main="app", src="js/lib/require.js")
     body(class="bg-main")
         div(class="navbar-fixed")
             nav
                 div(class="nav-wrapper")
                     a(id="page-route", style="display:none")= page
-                    a(href="#", class="brand-logo", data-bind="click:handleNavigation", data-view-name="main")= title
+                    a(href="#", class="brand-logo", data-bind="click:util.handleNavigation", data-view-name="main")= title
                     a(href="#", data-activates="mobile-nav", class="button-collapse")
                         i(class="material-icons") menu
                     ul(id="nav-mobile", class="right hide-on-med-and-down")
-                        li(data-bind="visible:userLoggedIn, click:handleNavigation", data-view-name="lobby")
+
+                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
                             a#nav-profile(href="#") Lobby
-                        li(data-bind="visible:userLoggedIn, click:handleNavigation", data-view-name="profile")
+                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
                             a#nav-profile(href="#") Profile
-                        li(data-bind="visible:!(userLoggedIn), click:handleNavigation", data-view-name="login")
+                        li(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
                             a#nav-login(href="#") Login
+                        li(data-bind="visible:util.userLoggedIn, click:util.logout")
+                            a#nav-login(href="#") Logout
+                        li.chat-icon-li(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
+                            a#in-game-chat-btn(class="material-icons", title="chat") chat_bubble_outline
                     ul(class="side-nav collection" id="mobile-nav")
-                        li(data-bind="visible:userLoggedIn, click:handleNavigation", data-view-name="Play")
+                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="Play")
                             span(class="") Play
                             i(class="small material-icons menu-icon") perm_identity
-                        li(data-bind="click:handleNavigation, visible:userLoggedIn", data-view-name="login")
+                        li(data-bind="click:util.handleNavigation, visible:util.userLoggedIn", data-view-name="login")
                             span(class="") Login
                             i(class="small material-icons menu-icon") input
         // Modal Structure
         div#challengeUserModal(class="modal")
             div(class="modal-content")
-                h5 Select a user to challenge
-                div(class="collection" data-bind="foreach:activeUsers")
-                    p(class="collection-item")
-                        input(type="radio", name="active-users", data-bind="attr:{ id:id }")
-                        label(data-bind="text:username, attr:{ for:id }")
+                //div(class="row")
+                    div(class="col s12")
+                        ul(class="tabs")
+                            li(class="tab col s3")
+                                a(class="active", href="#one-v-one") 1 v. 1
+                            li(class="tab col s3")
+                                a(href="#multiplayer") Multiplayer
+
+                //div#one-v-one(class="col s12")
+                    h5 Select a user to challenge
+                    div(class="collection", data-bind="foreach:coreData.activeUsers")
+                        p(class="collection-item")
+                            input(type="radio", name="active-users", data-bind="attr:{ id:id }")
+                            label(data-bind="text:username, attr:{ for:id }")
+                div#multiplayer(class="col s12")
+                    h5 Select user(s) to challenge
+                    div(class="collection", data-bind="foreach:coreData.activeUsers")
+                        p(class="collection-item")
+                            input(type="checkbox", name="active-users", data-bind="attr:{ id: id }")
+                            label(data-bind="text:username, attr:{ for:id }")
+                // look up knockout if obeervable array empty show msg here
             div(class="modal-footer")
                 a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
-                a(class="waves-effect waves-green btn-flat disabled" id="btn-challenge") Challenge
+                a(class="waves-effect waves-green btn-flat disabled", id="btn-challenge") Challenge
 
         div#challengeRespModal(class="modal")
             div(class="modal-content")
-                h5(data-bind="text:challengeModalHeaderMsg")
-            div(class="modal-footer", data-bind="template:challengeFooterTmpl")
+                h5(data-bind="text:lobby.challengeModalHeaderMsg")
+            div(class="modal-footer", data-bind="template:lobby.challengeFooterTmpl")
+
+        div#confirmModal(class="modal")
+            div(class="modal-content")
+                h5(data-bind="text:lobby.confirmModalHeaderMsg")
+            div(class="modal-footer", data-bind="template:lobby.confirmFooterTmpl")
+
+        div#wildCardModal(class="modal")
+            div(class="modal-content")
+                h5 What Color would you like to set?
+            div(class="modal-footer")
+                a(class="waves-effect waves-red btn-flat disabled", data-color="red") Red
+                a(class="waves-effect waves-blue btn-flat disabled", data-color="blue") Blue
+                a(class="waves-effect waves-yellow btn-flat disabled", data-color="yellow") Yellow
+                a(class="waves-effect waves-green btn-flat disabled", data-color="green") Green
 
 
         block content
-        script(src="/lib/socket.io.js")
-        script(src='/lib/jquery.js')
-        script(src='/lib/progressbar.min.js')
-        script(type='text/javascript', src='lib/materialize.js')
-        script(src='/lib/knockout.js')
-        script(src="/lib/validate.js")
-        script(src="/javascripts/deck.js")
-        script(src='/javascripts/global.js')
+        //script(src='js/lib/progressbar.min.js')

@@ -1,8 +1,7 @@
 extends layout
 
 block content
-    div#mainContent(data-bind="template: { name:bodyTmpl }")
-
+    div#mainContent(data-bind="template: { name:util.bodyTmpl }")
 
     script(type="text/html", id="blank-tmpl")
 
@@ -11,53 +10,29 @@ block content
         div(class="col s6 center" id="user-banner")
             div(id="img-cont")
                 //span(class="add-photo-txt") Upload Photo
-            h3(data-bind="text:currUser().fullname")
-            button(class="btn waves-effect waves-light", data-bind='click:editAccount') Edit
+            h3(data-bind="text:coreData.currUser().fullname")
+            //button(class="btn waves-effect waves-light", data-bind='click:editAccount') Edit
             div#user-info
                 br
-                span UID:
-                span(data-bind="text:currUser().uid")
+                p UID:
+                    span(data-bind="text:coreData.currUser().id")
                 br
-                span Email:
-                span(data-bind="text:currUser().email")
-                div(data-bind="visible:hasPhoneNum")
-                    span Phone:
-                    span(data-bind="text:currUser().phone")
-
-
-        // /SHOW USER INFO
-
-    script(type="text/html", id="edit-profile")
-        div(class="row")
-            fieldset
-                div(class="row")
-                    div(class="input-field col s12")
-                        input#inputUserFullname(type='text', name='name', class="validate")
-                        label(for="name") Full Name
-                div(class="row")
-                    div(class="input-field col s12")
-                        input#inputUID(type='text', name='uid', class="validate")
-                        label(for="uid") UID
-                div(class="row")
-                    div(class="input-field col s12")
-                        input#inputUserEmail(type='text', name='email', class="validate")
-                        label(for="email") Email
-                div(class="row")
-                    div(class="input-field col s12")
-                        input#inputUserEmail(type='text', name='email', class="validate")
-                        label(for="email") Phone
+                p Email:
+                    span(data-bind="text:coreData.currUser().email")
                 br
-                button(class="btn waves-effect waves-light", data-bind="click:updateUser")#btnAddUser Save
-                button(class="btn waves-effect waves-light", data-bind="click:handleNavigation", data-view-name="profile", style="margin-left:20px")#btnAddUser Cancel
-
+                p Username:
+                    span(data-bind="text:coreData.currUser().username")
+                br
+                p Win Count:
+                    span(data-bind="text:coreData.currUser().winCount")
 
     script(type="text/html", id="login")
         //div(class="bg-main")
         div(class="main-wrap")
             div(class="card login-card")
                 div(class="card-content bg-dk-cover")
-                    div(class="card-title card-heading" data-bind="text:pageHeading")
-                    div(class="row", data-bind="template: { name: loginBodyTmpl}")
+                    div(class="card-title card-heading" data-bind="text:util.pageHeading")
+                    div(class="row", data-bind="template: { name: util.loginBodyTmpl}")
                     div(class="row")
                         div(class="col s12")
                             button(class="btn waves-effect waves-light btn-lt", data-bind='click:login', style="width: 49%;") Login
@@ -76,7 +51,7 @@ block content
                         i(class="material-icons prefix") vpn_key
                         input#loginPass(type='password', name='name', class="validate", value="testing")
                         label(for="name") Password
-                div#login-error-msg(data-bind="text:errorMsg" class="error-txt" style="display:none;")
+                div#login-error-msg(data-bind="text:util.errorMsg" class="error-txt" style="display:none;")
 
     script(type="text/html", id="signup-body")
         div(class="row" id="signup-body")
@@ -101,14 +76,14 @@ block content
                         input#inputUserVerifyPassword(type='password', name='confirm-password', class="validate")
                         label(for="confirm-password") Confirm Password
                         div(class="error-msg")
-                div#signup-error-msg(data-bind="text:errorMsg" class="error-txt" style="display:none;")
+                div#signup-error-msg(data-bind="text:util.errorMsg" class="error-txt" style="display:none;")
 
     script(type="text/html", id="main")
         div(id="home-bg")
             div(id="main-btn-cont")
-                button(class="btn btn-main" data-bind="click:handleNavigation", data-view-name="login", data-subview-name="login-body", data-subview-title="Login") Login
+                button(class="btn btn-main col-100p" data-bind="click:util.handleNavigation", data-view-name="login", data-subview-name="login-body", data-subview-title="Login") Login
                 br
-                button(class="btn btn-main" data-bind="click:handleNavigation", data-view-name="login", data-subview-name="signup-body", data-subview-title="Sign Up") Sign Up
+                button(class="btn btn-main col-100p" data-bind="click:util.handleNavigation", data-view-name="login", data-subview-name="signup-body", data-subview-title="Sign Up") Sign Up
 
 
     script(type="text/html", id="lobby")
@@ -116,7 +91,7 @@ block content
         div(id="lobby-main")
 
             div#chat-window
-                div#chat-cont(data-bind="foreach:chatMsgs")
+                div#chat-cont(data-bind="foreach:coreData.chatMsgs")
                     div(class="card-panel", style="margin:.5em;overflow-x:hidden")
                         b
                             span(data-bind="text:sender, attr:{ 'class':senderColor}")
@@ -124,10 +99,10 @@ block content
                         span(data-bind="text:message")
                 div#chat-controls(class="row")
                     div(class="input-field col pw-90")
-                        input#chat-msg(type="text")
+                        input#chat-msg(type="text", data-bind="event:{ keyup:util.sendChatViaEnterKey }", data-btn-id="lobby-chat-btn")
                         label(for="chat-msg") Chat Message
                     div(class="col chat-btn pw-10")
-                        i(class="material-icons", data-bind="click:sendChat", data-roomid="1") send
+                        i(id="lobby-chat-btn", class="material-icons", data-bind="click:function(){ chat.sendChat('lobby-chat-btn') }", data-roomid="1", data-inputid='chat-msg') send
 
             div(class="row")
                 div(class="col s12")
@@ -138,305 +113,82 @@ block content
                             div(style="float:left;width:50%;", class="collection-header challenge-heading")
                                 h6(style="padding:0 2em") Received Challenges
                             div(style="float:left;width:50%;min-height:41px;")
-                                div(data-bind="foreach:sentChallenges")
-                                    a(data-bind="text:'You challenged ' + userChallenged + ' (' + status + ')', attr:{ 'data-id':challengeId, 'data-userchallenged':userChallenged, 'class':'collection-item challenge-text ' + challengeClass }, click:$parent.promptCancelChallenge")
+                                div(data-bind="foreach:coreData.sentChallenges")
+                                    div(data-bind="attr:{'class':'collection-item challenge-text ' + challengeClass}")
+                                        a(data-bind="text:challengeText, attr:{ 'data-id':id, 'data-userchallenged':usernamesChallenged, 'data-status':status }, click:$parent.lobby.promptCancelChallenge")
+                                        i(class="material-icons", style="float:right", title="Start Game", data-bind="click:$parent.game.startGame, visible:startGameVisible, attr:{ 'data-id':id }") play_arrow
                             div(style="float:left;width:50%;min-height:41px;")
-                                div(data-bind="foreach:receivedChallenges")
-                                    a(data-bind="text:'Challenge from ' + challenger + ' (' + status + ')', attr:{ 'data-id':challengeId, 'data-challenger':challenger, 'class':'collection-item challenge-text ' + challengeClass }, click:$parent.promptChallengeResponse")
-
+                                div(data-bind="foreach:coreData.receivedChallenges")
+                                    div(data-bind="attr:{'class':'collection-item challenge-text ' + challengeClass}")
+                                        a(data-bind="text:challengeText, attr:{ 'data-id':id, 'data-challenger':challenger, 'data-status':status }, click:$parent.lobby.promptChallengeResponse")
 
             div(class="row")
                 div(class="col s12")
-                    button(class="btn btn-main", data-bind="click:showSendChallengeModal", data-view-name="game") Challenge Someone!
-            //button(class="btn btn-main", data-bind="click:handleNavigation", data-view-name="game") Play Game
+                    button(class="btn btn-main col-100p", data-bind="click:lobby.showSendChallengeModal", data-view-name="game") Challenge Someone!
 
+    script(type="text/html", id="pre-game-lobby")
+        div(class="row")
+            div(class="col s12")
+                div(class="card")
+                    div(class="card-content")
+                        h3(data-bind="text:util.preGameLobbyMsg")
+                    div(class="card-action")
+                        a(class="waves-effect waves-green btn-flat", data-bind="click:lobby.cancelChallenge, attr:{ 'data-id':lobby.activeChallengeId }") Cancel Challenge
 
     script(type="text/html", id="game")
         div(id="game-main")
+            div#inGameChatWindow
+                div#game-chat-window
+                    div#chat-cont(data-bind="foreach:coreData.gameChatMsgs")
+                        div(class="card-panel", style="margin:.5em;overflow-x:hidden")
+                            b
+                                span(data-bind="text:sender, attr:{ 'class':senderColor}")
+                            span(style="margin-right:1em;") :
+                            span(data-bind="text:message")
+                    div#game-chat-controls(class="row")
+                        div(class="input-field col pw-90")
+                            input#game-chat-msg(type="text", data-bind="event:{ keyup:util.sendChatViaEnterKey }", data-btn-id="game-chat-btn")
+                            label(for="chat-msg") Chat Message
+                        div(class="col chat-btn pw-10", data-bind="with:game.gameObj")
+                            i(id="game-chat-btn", class="material-icons", data-bind="click:function(){ $root.chat.sendChat('game-chat-btn') }, attr:{ 'data-roomid':gameId }", data-inputid="game-chat-msg") send
+        div(data-bind="with:game.gameObj")
             div#players(class="row bg-gray")
-                div#player-sect
+                div#player-sect(data-bind="foreach:gamePlayers")
+                    div(class="player-wrap")
+                        img(src="media/users/user.png", data-bind="attr:{ 'alt':username, class:playerClass }", height="70", width="70")
+                        div(class="hand-count", data-bind="text:cardCount")
+                        div(data-bind="text:username, attr:{ class: 'player-username ' + playerClass() }")
                 div.clearfix
             div#game-view(class="row")
                 div#game-card-view
                     div#deck-view.card-view
-                        object#deck(data='media/cards/cb.svg', type='image/svg+xml', width='60')
-                            | Your browser doesn't support SVG
-                    div#current-gc-view.card-view
-                        object#current-gc(data='media/cards/r0.svg', type='image/svg+xml', width='60')
-                            | Your browser doesn't support SVG
+                        img(data-bind="attr:{ src: 'media/cards/cb.svg'}, click:$root.game.draw", height="90")
+                    div#current-gc-view(data-bind="attr:{class:'card-view active-color-' + currColor() }")
+                        img(data-bind="attr:{ src: 'media/cards/' + currGC() + '.svg'}", height="90")
                     div#previous-gc-view.card-view
-                        object#previous-gc(data='media/cards/b2.svg', type='image/svg+xml', height='90', width='60')
-                            | Your browser doesn't support SVG
-                    .clearfix
-            div#player-hand(class="row")
-            div(style='display:none;')
-                // RED CARDS
-                object#r0(data='media/cards/r0.svg', type='image/svg+xml')
-                    | Your browser doesn't support SVG
-                object#r1(data='media/cards/r1.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#r2(data='media/cards/r2.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#r3(data='media/cards/r3.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#r4(data='media/cards/r4.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#r5(data='media/cards/r5.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#r6(data='media/cards/r6.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#r7(data='media/cards/r7.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#r8(data='media/cards/r8.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#r9(data='media/cards/r9.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#rs(data='media/cards/rs.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#rr(data='media/cards/rr.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#rd(data='media/cards/rd.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                // BLUE CARDS
-                object#b0(data='media/cards/b0.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b1(data='media/cards/b1.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b2(data='media/cards/b2.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b3(data='media/cards/b3.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b4(data='media/cards/b4.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b5(data='media/cards/b5.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b6(data='media/cards/b6.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b7(data='media/cards/b7.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b8(data='media/cards/b8.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#b9(data='media/cards/b9.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#bs(data='media/cards/bs.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#br(data='media/cards/br.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#bd(data='media/cards/bd.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                // YELLOW CARDS
-                object#y0(data='media/cards/y0.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y1(data='media/cards/y1.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y2(data='media/cards/y2.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y3(data='media/cards/y3.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y4(data='media/cards/y4.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y5(data='media/cards/y5.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y6(data='media/cards/y6.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y7(data='media/cards/y7.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y8(data='media/cards/y8.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#y9(data='media/cards/y9.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#ys(data='media/cards/ys.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#yr(data='media/cards/yr.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#yd(data='media/cards/yd.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                // GREEN CARDS
-                object#g0(data='media/cards/g0.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g1(data='media/cards/g1.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g2(data='media/cards/g2.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g3(data='media/cards/g3.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g4(data='media/cards/g4.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g5(data='media/cards/g5.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g6(data='media/cards/g6.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g7(data='media/cards/g7.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g8(data='media/cards/g8.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#g9(data='media/cards/g9.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#gs(data='media/cards/gs.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#gr(data='media/cards/gr.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#gd(data='media/cards/gd.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                // WILD CARDS
-                object#w(data='media/cards/w.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                object#wd(data='media/cards/wd.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
-                // CARD BACK
-                object#cb(data='media/cards/cb.svg', type='image/svg+xml', height='90', width='60')
-                    | Your browser doesn't support SVG
+                        img(data-bind="attr:{ src: 'media/cards/' + prevGC() + '.svg'}", height="90")
 
+                    .clearfix
+            div#action-bar(class="row")
+                button(class="btn btn-main btn-sm", style="width:32%;", data-bind="click:$root.game.sayUno, enable:$root.game.canSayUno") Say Uno!
+                button(class="btn btn-main btn-sm", style="width:32%;margin-left:2%", data-bind="click:$root.game.challengeUno") Challenge Uno
+                button(class="btn btn-main btn-sm", style="width:32%;margin-left:2%", data-bind="click:$root.lobby.confirmQuitGame") Quit Game
+
+            div#player-hand(data-bind="attr:{ class: 'row ' + currPlayer().playerClass() }")
+                div(data-bind="attr:{ class:'curr-player-username ' + currPlayer().playerClass() }")
+                    h5(data-bind="text:$root.coreData.currUser().username")
+                div(data-bind="foreach:currPlayer().hand")
+                    div.card-view(data-bind="attr:{ title:cardName }")
+                        img(data-bind="attr:{ src: 'media/cards/' + svgName + '.svg', 'data-id':svgName }, click:$root.game.validateMove", height="90")
+                    //object(data-bind="attr:{ data:'media/cards/' + svgName + '.svg', 'data-card':cardName}", type='image/svg+xml', height='90', width='60')
+                    //    | Your browser doesn't support SVG
 
     script(type="text/html", id="bad-browser")
         div(class="row")
             h1(class="error-msg") This browser is not supported
             h2(class="error-msg") Please update your browser
 
-    script(type="text/html", id="testing")
-        div(class="row")
-            h4 Functions
-            br
-            button(class="btn waves-effect waves-light", data-bind='click:getUsers', style="margin-left:20px") Get Users
-            button(class="btn waves-effect waves-light", data-bind='click:getBooks', style="margin-left:20px") Get Books
-            // Wrapper
-            #wrapper
-                div(class="row")
-                    // USER LIST
-                    div(class="col s6")
-                        h3 User List
-                        #userList(style="margin-bottom:20px")
-                            table
-                                thead
-                                    th Full Name
-                                    th Email
-                                    th Delete?
-                                tbody(data-bind='foreach:userList')
-                                    tr(data-bind='attr:{ \'data-id\':uid }')
-                                        td(data-bind='text:fullname, click:$parent.getUser')
-                                        td(data-bind='text:email')
-                                        td(data-bind='click:$parent.removeUser') Delete
-                    // BOOK LIST
-                    div(class="col s6")
-                        h3 Book List
-                        #userList(style="margin-bottom:20px")
-                            table
-                                thead
-                                    th Title
-                                    th Condtion
-                                    th Delete?
-                                tbody(data-bind='foreach:bookList')
-                                    tr(data-bind='attr:{ \'data-id\':isbn }')
-                                        td(data-bind='text:title, click:$parent.getBook')
-                                        td(data-bind='text:condition')
-                                        td(data-bind='click:$parent.removeBook') Delete
-
-
-
-                div(class="row")
-                    // SHOW USER INFO
-                    div(class="col s6")
-                        h3 User Info
-                        div#user-info
-                            span Full Name:
-                            span(data-bind="text:currUser().fullname")
-                            br
-                            span UID:
-                            span(data-bind="text:currUser().uid")
-                            br
-                            span Email:
-                            span(data-bind="text:currUser().email")
-                            br
-                            span Rating:
-                            span(data-bind="text:currUser().rating")
-                    // /SHOW USER INFO
-
-                    // SHOW BOOK INFO
-                    div(class="col s6")
-                        h3 Book Info
-                        div#user-info
-                            span ISBN:
-                            span(data-bind="text:currBook().isbn")
-                            br
-                            span Title:
-                            span(data-bind="text:currBook().title")
-                            br
-                            span Edition:
-                            span(data-bind="text:currBook().edition")
-                            br
-                            span Description:
-                            span(data-bind="text:currBook().description")
-                            br
-                            span Price:
-                            span(data-bind="text:currBook().price")
-                    // /SHOW BOOK INFO
-
-                div(class="row")
-                    // ADD USER
-                    div(class="col m6")
-                        h3 Add User
-                        #addUser
-                            fieldset
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputUserFullname(type='text', name='name', class="validate")
-                                        label(for="name") Full Name
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputUID(type='text', name='uid', class="validate")
-                                        label(for="uid") UID
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputUserEmail(type='text', name='email', class="validate")
-                                        label(for="email") Email
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputUserRating(type='text', name='rating', class="validate")
-                                        label(for="rating") Rating
-                                br
-                                button(class="btn waves-effect waves-light", data-bind="click:addUser")#btnAddUser Add User
-                    // /ADD USER
-                    // ADD BOOK
-                    div(class="col s6")
-                        h3 Add Book
-                        #addBook
-                            fieldset
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputBookISBN(type='text', name='isbn', class="validate")
-                                        label(for="isbn") ISBN
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputBookTitle(type='text', name='book-title', class="validate")
-                                        label(for="book-title") Title
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputBookEdition(type='text', name='edition', class="validate")
-                                        label(for="edition") Edition
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputBookPrice(type='text', name='price', class="validate")
-                                        label(for="price") Price
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputBookDesc(type='text', name='description', class="validate")
-                                        label(for="description") Description
-                                div(class="row")
-                                    div(class="input-field col s12")
-                                        input#inputBookHardcover(type='checkbox' name='inputBookHardcover', class="filled-in")
-                                        label(for="inputBookHardcover") Is Harcover
-                                        div(class="row")
-                                    div(class="input-field col s12")
-                                        span Condition
-                                        select#inputBookQual(name='condition', class='browser-default')
-                                            option(value='good') Good
-                                            option(value='bad') Bad
-                                            option(value='ugly') Ugly
-                                br
-                                button(class="btn waves-effect waves-light", data-bind="click:addBook")#btnAddUser Add Book
-                    // / ADD BOOK
-            // /WRAPPER
-
+    // Modal Footer Template
     script(type="text/html", id="challenge-resp-footer-tmpl")
         a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
         a(class="waves-effect waves-green btn-flat" id="btn-accept-challenge") Accept
@@ -444,3 +196,6 @@ block content
     script(type="text/html", id="challenge-cancel-footer-tmpl")
         a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
         a(class="waves-effect waves-green btn-flat" id="btn-cancel-challenge") Cancel Challenge
+    script(type="text/html", id="confirm-quit-footer-tmpl")
+        a(class="modal-action modal-close waves-effect waves-green btn-flat") Cancel
+        a(class="waves-effect waves-green btn-flat" id="btn-quit-game" data-bind="click:game.quitGame") Quit Game
