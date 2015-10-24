@@ -152,6 +152,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         });
         break;
       case "lobby":
+        //userInGame(false);
         inLobby(true);
         // stop interval if... !!!!!!!!!! --------- THIS IS A PROBLEM BECAUSE IT STOPS - FIX ME
         var getActiveUsersInterval = setInterval(function(){ if(userLoggedIn() && !(challengeModalOpen()) ){ getActiveUsers(); } }, 1500 );
@@ -160,6 +161,8 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
 
         break;
       case "game":
+        inLobby(false);
+        //userInGame(true);
         break;
       case "logout":
         logout();
@@ -185,7 +188,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         _credentials = null;
       }
       // validate login credentials
-      validateLogin({
+      validateLogin(_credentials, {
         success:function(user){
           console.log("loggedIn user: " + user);
           changeMainView("lobby");
@@ -194,11 +197,12 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
           window.localStorage.setItem("loggedInToken", user.token);
         },
         error:function(){
+          console.log("error logging in");
           $('#login-body-form').find('input').addClass("invalid");
           $('#login-error-msg').slideDown();
           errorMsg("Incorrect combination!");
         }
-      }, _credentials );
+      });
 
     }else{
       // show different form
@@ -216,41 +220,35 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     if(userInGame()){
       userInGame(false);
     }
+    // if user was in lobby
+    if(inLobby()){
+      inLobby(false);
+    }
 
     changeMainView("main");
   };
 
   addUser = function(_actions){
-    var email = $('#signup-body-form input#inputUserEmail').val(),
-      username = $('#signup-body-form input#inputUsername').val(),
-      password = $('#signup-body-form input#inputUserPassword').val();
+    var email = $('#signup-body-form').find('input#inputUserEmail').val(),
+      username = $('#signup-body-form').find('input#inputUsername').val(),
+      password = $('#signup-body-form').find('input#inputUserPassword').val();
 
     validateSignUp({
       success: function () {
 
-        // Use AJAX to post the object to our adduser service
-        $.ajax({
-          type: 'POST',
-          data: {
+        coreData.mainSocket.emit('addUser', {
             'email': email,
             'username': username,
             'password': password
-          },
-          url: '/users/adduser',
-          dataType: 'JSON'
-        }).done(function( response ) {
-          // Check for successful response
-          if (response.msg === 'success') {
-
-            // Clear the form inputs
-            $('#signup-body-form fieldset input').val('');
-            _actions.success();
-          }
-          else {
-            // If something goes wrong, alert the error message that our service returned
-            _actions.error(response.msg);
-          }
-        });
+          }, function(data){
+            if(data.msg == "success"){
+              // Clear the form inputs
+              $('#signup-body-form fieldset input').val('');
+              _actions.success();
+            }else{
+              Materialize.toast(data.msg, 3000);
+            }
+          });
       },
       errors:function(){
         _actions.error();
@@ -379,7 +377,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     });
   }
 
-  validateLogin = function(_actions, _credentials){
+  validateLogin = function(_credentials, _actions){
     var errorCount = 0,
       $loginForm =  $('#login-body-form');
 
@@ -393,12 +391,12 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         'username': $loginForm.find('input#loginUsername').val(),
         'password': $loginForm.find('input#loginPass').val()
       };
+
       if(_credentials){
         credentials = _credentials;
       }
 
       coreData.mainSocket.emit('validateLogin', credentials, function(data){
-        console.log(data);
         (data.valid == true) ? _actions.success(data.user) : _actions.error();
       });
 
@@ -454,10 +452,8 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     showErrors(form, errors || {});
     // And if all constraints pass we let the user know
     if (!errors) {
-      console.log("valid");
       _actions.success();
     }else{
-      console.log("error");
       _actions.errors();
     }
 

@@ -54,20 +54,6 @@ html
         // Modal Structure
         div#challengeUserModal(class="modal")
             div(class="modal-content")
-                //div(class="row")
-                    div(class="col s12")
-                        ul(class="tabs")
-                            li(class="tab col s3")
-                                a(class="active", href="#one-v-one") 1 v. 1
-                            li(class="tab col s3")
-                                a(href="#multiplayer") Multiplayer
-
-                //div#one-v-one(class="col s12")
-                    h5 Select a user to challenge
-                    div(class="collection", data-bind="foreach:coreData.activeUsers")
-                        p(class="collection-item")
-                            input(type="radio", name="active-users", data-bind="attr:{ id:id }")
-                            label(data-bind="text:username, attr:{ for:id }")
                 div#multiplayer(class="col s12")
                     h5 Select user(s) to challenge
                     div(class="collection", data-bind="foreach:coreData.activeUsers")
@@ -82,6 +68,7 @@ html
         div#challengeRespModal(class="modal")
             div(class="modal-content")
                 h5(data-bind="text:lobby.challengeModalHeaderMsg")
+                div(data-bind="template:{name:lobby.challengeModalBody}")
             div(class="modal-footer", data-bind="template:lobby.challengeFooterTmpl")
 
         div#confirmModal(class="modal")

@@ -27,7 +27,6 @@ block content
                     span(data-bind="text:coreData.currUser().winCount")
 
     script(type="text/html", id="login")
-        //div(class="bg-main")
         div(class="main-wrap")
             div(class="card login-card")
                 div(class="card-content bg-dk-cover")
@@ -87,23 +86,8 @@ block content
 
 
     script(type="text/html", id="lobby")
-        //div(id="lobby-main", class="bg-main")
         div(id="lobby-main")
-
-            div#chat-window
-                div#chat-cont(data-bind="foreach:coreData.chatMsgs")
-                    div(class="card-panel", style="margin:.5em;overflow-x:hidden")
-                        b
-                            span(data-bind="text:sender, attr:{ 'class':senderColor}")
-                        span(style="margin-right:1em;") :
-                        span(data-bind="text:message")
-                div#chat-controls(class="row")
-                    div(class="input-field col pw-90")
-                        input#chat-msg(type="text", data-bind="event:{ keyup:util.sendChatViaEnterKey }", data-btn-id="lobby-chat-btn")
-                        label(for="chat-msg") Chat Message
-                    div(class="col chat-btn pw-10")
-                        i(id="lobby-chat-btn", class="material-icons", data-bind="click:function(){ chat.sendChat('lobby-chat-btn') }", data-roomid="1", data-inputid='chat-msg') send
-
+            div(data-bind="template:{name:'chat-section'}")
             div(class="row")
                 div(class="col s12")
                     div(class="collection with-header bg-white")
@@ -115,12 +99,12 @@ block content
                             div(style="float:left;width:50%;min-height:41px;")
                                 div(data-bind="foreach:coreData.sentChallenges")
                                     div(data-bind="attr:{'class':'collection-item challenge-text ' + challengeClass}")
-                                        a(data-bind="text:challengeText, attr:{ 'data-id':id, 'data-userchallenged':usernamesChallenged, 'data-status':status }, click:$parent.lobby.promptCancelChallenge")
+                                        a(data-bind="text:challengeText, attr:{ 'data-index':$index }, click:$parent.lobby.promptCancelChallenge")
                                         i(class="material-icons", style="float:right", title="Start Game", data-bind="click:$parent.game.startGame, visible:startGameVisible, attr:{ 'data-id':id }") play_arrow
                             div(style="float:left;width:50%;min-height:41px;")
                                 div(data-bind="foreach:coreData.receivedChallenges")
                                     div(data-bind="attr:{'class':'collection-item challenge-text ' + challengeClass}")
-                                        a(data-bind="text:challengeText, attr:{ 'data-id':id, 'data-challenger':challenger, 'data-status':status }, click:$parent.lobby.promptChallengeResponse")
+                                        a(data-bind="text:challengeText, attr:{ 'data-index':$index }, click:$parent.lobby.promptChallengeResponse")
 
             div(class="row")
                 div(class="col s12")
@@ -133,24 +117,12 @@ block content
                     div(class="card-content")
                         h3(data-bind="text:util.preGameLobbyMsg")
                     div(class="card-action")
-                        a(class="waves-effect waves-green btn-flat", data-bind="click:lobby.cancelChallenge, attr:{ 'data-id':lobby.activeChallengeId }") Cancel Challenge
+                        a(class="waves-effect waves-green btn-flat", data-bind="click:lobby.cancelChallenge, attr:{ 'data-id':util.activeChallengeId }") Cancel Challenge
 
     script(type="text/html", id="game")
         div(id="game-main")
             div#inGameChatWindow
-                div#game-chat-window
-                    div#chat-cont(data-bind="foreach:coreData.gameChatMsgs")
-                        div(class="card-panel", style="margin:.5em;overflow-x:hidden")
-                            b
-                                span(data-bind="text:sender, attr:{ 'class':senderColor}")
-                            span(style="margin-right:1em;") :
-                            span(data-bind="text:message")
-                    div#game-chat-controls(class="row")
-                        div(class="input-field col pw-90")
-                            input#game-chat-msg(type="text", data-bind="event:{ keyup:util.sendChatViaEnterKey }", data-btn-id="game-chat-btn")
-                            label(for="chat-msg") Chat Message
-                        div(class="col chat-btn pw-10", data-bind="with:game.gameObj")
-                            i(id="game-chat-btn", class="material-icons", data-bind="click:function(){ $root.chat.sendChat('game-chat-btn') }, attr:{ 'data-roomid':gameId }", data-inputid="game-chat-msg") send
+                div(data-bind="template:{name:'chat-section'}")
         div(data-bind="with:game.gameObj")
             div#players(class="row bg-gray")
                 div#player-sect(data-bind="foreach:gamePlayers")
@@ -182,6 +154,40 @@ block content
                         img(data-bind="attr:{ src: 'media/cards/' + svgName + '.svg', 'data-id':svgName }, click:$root.game.validateMove", height="90")
                     //object(data-bind="attr:{ data:'media/cards/' + svgName + '.svg', 'data-card':cardName}", type='image/svg+xml', height='90', width='60')
                     //    | Your browser doesn't support SVG
+
+    script(type="text/html", id="challenger-response-modal")
+        div(data-bind="with:lobby.currentSentChallenge")
+            table
+                thead
+                    tr
+                        th Username
+                        th Status
+                tbody(data-bind="foreach:usersChallenged")
+                    tr
+                        td(data-bind="text:username")
+                        td(data-bind="text:status")
+
+
+    script(type="text/html", id="chat-section")
+        div#chat-window
+            div#chat-cont
+                // ko if: coreData.activeChatData().msgs().length == 0
+                div(class="card-panel" style="margin:.5em;overflow-x:hidden") No Chat Messages within the last 15 mins
+                // /ko
+
+                div(data-bind="foreach:coreData.activeChatData().msgs()")
+                    div(class="card-panel", style="margin:.5em;overflow-x:hidden")
+                        b
+                            span(data-bind="text:sender, attr:{ 'class':senderColor}")
+                        span(style="margin-right:1em;") :
+                        span(data-bind="text:message")
+
+            div#chat-controls(class="row")
+                div(class="input-field col pw-90")
+                    input#chat-msg(type="text", data-bind="event:{ keyup:util.sendChatViaEnterKey }")
+                    label(for="chat-msg") Chat Message
+                div(class="col chat-btn pw-10")
+                    i(id="chat-btn", class="material-icons", data-bind="click:chat.sendChat, attr:{ 'data-roomid':coreData.activeChatData().roomId }") send
 
     script(type="text/html", id="bad-browser")
         div(class="row")

@@ -7,43 +7,42 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
     challengeModalHeaderMsg = ko.observable(""),
     challengeFooterTmpl = ko.observable("blank-tmpl"),
     challengeModalTitle = ko.observable(),
+    challengeModalBody = ko.observable("blank-tmpl"),
+    currentSentChallenge = ko.observable(),
 
     // confirmation modal
     confirmFooterTmpl = ko.observable("blank-tmpl"),
     confirmModalHeaderMsg = ko.observable(""),
-  //oneVOnePlayerToChallenge = ko.observable(""),
     usersChallenged = ko.observableArray("");
 
 
   // confirm quiting game
   self.confirmQuitGame = function () {
     var $confirmModal = $('#confirmModal');
-
     confirmModalHeaderMsg("Are you sure you want to quit?");
     confirmFooterTmpl("confirm-quit-footer-tmpl");
-
     $confirmModal.openModal();
 
     $('#btn-quit-game').on("click", function () {
       $confirmModal.closeModal();
     });
-
   };
 
   // CHALLENGE STUFF
 
-
   self.promptChallengeResponse = function(data, event){
-    var status = event.target.getAttribute("data-status");
-    if( (status == "cancelled" ) || (status == "declined") ){
-      Materialize.toast("This Challenge is " + status + ", you cannot cancel it.", 4000);
+    var challengeIndex = event.target.getAttribute("data-index"),
+        currChallenge = coreData.receivedChallenges()[challengeIndex];
+
+    if( (currChallenge.status == "cancelled" ) || (currChallenge.status == "declined") ){
+      Materialize.toast("This Challenge is " + currChallenge.status + ", you cannot cancel it.", 4000);
     }else{
 
       var $challengeRespModal = $('#challengeRespModal'),
-        challengeId = event.target.getAttribute("data-id"),
-        challengerName = event.target.getAttribute("data-challenger");
+        challengeId = currChallenge.id,
+        challengerName = currChallenge.challenger.username;
 
-      if( (status == "ready") || (status == "accepted") ) {
+      if( (currChallenge.status == "ready") || (currChallenge.status == "accepted") ) {
 
         // allow them to cancel
         challengeFooterTmpl('challenge-cancel-footer-tmpl');
@@ -55,7 +54,7 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
           handleChallenge(challengeId, 0);
         });
 
-      }else if(status == "pending"){
+      }else if(currChallenge.status == "pending"){
         // only show modal if status is sent
         challengeFooterTmpl('challenge-resp-footer-tmpl');
         challengeModalHeaderMsg("Accept or Decline Challenge from: " + challengerName);
@@ -77,19 +76,27 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
             function(){
               util.getChallenge(util.activeChallengeId(), {
                 success:function(challenge){
-                  console.log("challenge: " + challenge);
-                  if(challenge.status == "ready"){
-                    clearInterval(getChallengeInterval);
-                    // set current player inGame=true
-                    coreData.gameSocket.emit('setPlayerInGame', { challengeId:challengeId, userId:coreData.currUser().id }, function(data) {  });
-                    // then host has started the game so send them to the game room
-                    game.joinGame(challengeId);
+                  if(challenge.status == "all responded"){
+
+                    // check if game exists yet
+                    coreData.gameSocket.emit('getGameByChallengeId', { challengeId:challenge.id, userId:coreData.currUser().id }, function(data){
+
+                      if(data.msg == "success"){
+
+                        clearInterval(getChallengeInterval);
+                        // set current player inGame=true
+                        coreData.gameSocket.emit('setPlayerInGame', { challengeId:challenge.id, userId:coreData.currUser().id }, function(data) {  });
+                        // then host has started the game so send them to the game room
+                        game.joinGame(challenge.id);
+                      }else{
+                        console.log("error joining game");
+                      }
+                    });
 
                   }else if(challenge.status == "cancelled"){
                     clearInterval(getChallengeInterval);
                     util.changeMainView("lobby");
-                    Materialize.toast('Sorry this challenge was cancelled by the host.', 3000);
-
+                    Materialize.toast('Sorry this challenge was cancelled.', 3000);
                   }
                 },
                 error:function(){
@@ -98,7 +105,6 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
                 }
               });
             }, 1000);
-
         });
         $('#btn-decline-challenge').on("click", function(){
           // declined challenge
@@ -106,47 +112,40 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
         });
       }
     }
-
   };
+
+  // modal for checking up on and cancelling a challenge or starting a game if everyone has responded
   self.promptCancelChallenge = function(data, event){
     // cant cancel it because its already dead
-    var status = event.target.getAttribute("data-status");
-    if( (status == "cancelled") || (status == "declined") ){
-      Materialize.toast('This Challenge is ' + status + ", you cannot cancel it.", 4000);
-    }else{
-      var $challengeRespModal = $('#challengeRespModal'),
-        challengeId = event.target.getAttribute("data-id"),
-        userChallengedName = event.target.getAttribute("data-userchallenged");
+    var index = event.target.getAttribute("data-index");
 
+    currentSentChallenge(coreData.sentChallenges()[index]);
+    var currStatus = currentSentChallenge().status;
+    if( (currStatus == "cancelled") || (currStatus == "declined") ){
+      Materialize.toast('This Challenge is ' + currStatus + ", you cannot cancel it.", 4000);
+    }else{
       // only show modal if status is sent
       // if status is declined remove?
+      var $challengeRespModal = $('#challengeRespModal');
+      challengeModalHeaderMsg('Cancel your challenge to: ' + currentSentChallenge().usernamesChallenged);
+      challengeModalBody("challenger-response-modal");
       challengeFooterTmpl('challenge-cancel-footer-tmpl');
-      challengeModalHeaderMsg('Cancel your challenge to: ' + userChallengedName);
       $challengeRespModal.openModal();
 
       $('#btn-cancel-challenge').on("click", function(){
         // cancel challenge
-        handleChallenge(challengeId, 0);
+        handleChallenge(currentSentChallenge().id, 0);
       });
     }
-
   };
+
+  // modal for challenging others
   self.showSendChallengeModal = function(data, event){
     var $challengeModal = $('#challengeUserModal'),
       $challengeBtn = $('#btn-challenge');
 
     $challengeModal.openModal();
     util.challengeModalOpen(true);
-
-    $('ul.tabs').tabs();
-
-    //$challengeModal.find('input[type=radio]').each(function(){
-    //  $(this).on("change", function(){
-    //    var id = $(this).attr("id");
-    //    oneVOnePlayerToChallenge(id);
-    //    $challengeBtn.removeClass('disabled');
-    //  });
-    //});
 
     $challengeModal.find('input[type=checkbox]').each(function(){
       $(this).on("change", function(){
@@ -177,7 +176,6 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
       });
     });
 
-
     $challengeBtn.unbind('click');
     $challengeBtn.on('click', function(){
       usersChallenged.removeAll(); // empty it first
@@ -201,12 +199,13 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
         });
         $('#challengeUserModal').closeModal();
         util.challengeModalOpen(false);
+        $challengeBtn.addClass('disabled');
       }
     });
 
-
     $challengeModal.find('a.modal-close').on('click', function(){
       util.challengeModalOpen(false);
+      $challengeBtn.addClass('disabled');
     });
 
   };
@@ -254,8 +253,9 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
   self.confirmFooterTmpl = confirmFooterTmpl;
   self.confirmModalHeaderMsg = confirmModalHeaderMsg;
   self.challengeFooterTmpl = challengeFooterTmpl;
-  //self.oneVOnePlayerToChallenge = oneVOnePlayerToChallenge;
   self.usersChallenged = usersChallenged;
+  self.challengeModalBody = challengeModalBody;
+  self.currentSentChallenge = currentSentChallenge;
 
 
   // functions

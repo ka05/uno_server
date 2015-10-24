@@ -8,7 +8,6 @@ var CoreData = {};
   // Challenge Objects
   CoreData.Challenge = function(_data){
     this.id = _data._id;
-    this.challengeId = _data.challengeId;
     this.challenger = _data.challenger;
     this.usersChallenged = _data.usersChallenged;
     this.timestamp = _data.timestamp;
@@ -19,7 +18,10 @@ var CoreData = {};
     this.id = _data._id;
     this.email = _data.email;
     this.username = _data.username;
+    this.password = _data.password;
+    this.socketId = _data.socketId;
     this.winCount = _data.winCount;
+    this.online = _data.online;
     this.token = _data.token;
   };
 

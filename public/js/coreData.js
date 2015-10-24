@@ -11,6 +11,11 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
 
     // LOBBY STUFF
     activeUsers = ko.observableArray(),
+    activeChatData = ko.observable({
+      length:0,
+        msgs:ko.observableArray(),
+      roomId:1
+    }),
     receivedChallenges = ko.observableArray(),
     sentChallenges = ko.observableArray(),
     chatMsgs = ko.observableArray(),
@@ -37,28 +42,26 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   // received Challenges
   self.RecChallenge = function(_data){
     this.id = _data.id;
-    this.challengeId = _data.challengeId;
-    this.usersChallenged = _data.usersChallenged;
+    this.status = _data.status;
     this.timestamp = _data.timestamp;
     this.challenger = _data.challenger;
-    this.status = _data.status;
-    this.challengeClass = getChallengeClass(_data.status);
+    this.usersChallenged = _data.usersChallenged;
     this.challengeText = createChallengeRecText(_data);
+    this.challengeClass = getChallengeClass( getRecChallengeStatus(_data) );
     //this.startGameVisible = checkStartGameVisible(_data.status);
     //this.openGameVisible = checkJoinGameVisible(_data.status);
   };
 
   self.SentChallenge = function(_data){
     this.id = _data.id;
-    this.challengeId = _data.challengeId;
-    this.usersChallenged = _data.usersChallenged;
-    this.usernamesChallenged = getUsernamesChallenged(_data);
+    this.status = _data.status;
     this.timestamp = _data.timestamp;
     this.challenger = _data.challenger;
-    this.status = _data.status;
+    this.usersChallenged = _data.usersChallenged;
+    this.usernamesChallenged = getUsernamesChallenged(_data);
+    this.challengeText = createChallengeSentText(_data);
     this.challengeClass = getChallengeClass(_data.status);
     this.startGameVisible = checkStartGameVisible(_data.status);
-    this.challengeText = createChallengeSentText(_data);
     //this.openGameVisible = checkJoinGameVisible(_data.status);
   };
 
@@ -140,7 +143,8 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   };
 
   createChallengeRecText = function(_data){
-    return 'Challenge from ' + _data.challenger + ' (' + _data.status + ')'
+    var status = getRecChallengeStatus(_data);
+    return 'Challenge from ' + _data.challenger.username + ' (' + status + ')'
   };
 
   // UI Manipulation
@@ -153,18 +157,22 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
     }
   };
   checkStartGameVisible = function(_status){
-    return (_status == "accepted" )
+    return (_status == "all responded" )
   };
   checkJoinGameVisible = function(_status){
     return (_status == "ready")
   };
-  getChallengeClass = function(_status){
+  getChallengeClass = function(_status, _usersChallenged){
+
     switch(_status){
       case "cancelled":
         return "cancelled-item";
         break;
       case "accepted":
         return "accepted-item";
+        break;
+      case "all responded":
+        return "ready-item";
         break;
       case "declined":
         return "declined-item";
@@ -175,6 +183,29 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
       case "ready":
         return "ready-item";
         break;
+    }
+  };
+  getRecChallengeStatus = function(_challenge){
+    var status = null;
+
+    if(_challenge.status == "cancelled"){
+      return _challenge.status;
+    }else {
+      // check this specific users response
+      for (var i = 0, j = _challenge.usersChallenged.length; i < j; i++) {
+        // make sure that they are a challenged user
+        if (_challenge.usersChallenged[i]._id == currUser().id) {
+          // see if status anything but declined or accepted
+          if (_challenge.usersChallenged[i].status != "") {
+            status = _challenge.usersChallenged[i].status;
+          }
+        }
+      }
+      if (status != null) {
+        return status;
+      } else {
+        return _challenge.status;
+      }
     }
   };
   getPlayerClass = function(_isMyTurn){
@@ -195,6 +226,7 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   self.currUser = currUser;
   self.gameObj = gameObj;
   self.gameChatMsgs = gameChatMsgs;
+  self.activeChatData = activeChatData;
 
   return self;
 

@@ -8,17 +8,17 @@ var passport = require('passport');
 var Strategy = require('passport-local').Strategy;
 
 // data objects
-var coreData = require('./coreData/coreData.js');
+var coreData = require('./custom_modules/coreData/coreData.js');
 
 // Database
 var mongo = require('mongoskin');
-var db = mongo.db("mongodb://localhost:27017/nodetest", {native_parser:true});
+var db = mongo.db("mongodb://localhost:27017/uno", {native_parser:true});
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
-var game = require('./routes/game');
-var lobby = require('./routes/lobby');
-var chat = require('./routes/chat');
+var users = require('./routes/users')(db);
+var game = require('./routes/game')(db);
+var lobby = require('./routes/lobby')(db);
+var chat = require('./routes/chat')(db);
 
 var app = express();
 
@@ -30,7 +30,9 @@ var loginIO = io
   .on("connection", function(socket){
     var loggedIn = false,
         socketId = socket.id;
-    console.log("socketId: " + socketId);
+
+    // loop through and create all these
+
     socket.on('validateLogin', function(data, fn){
       data.socketId = socketId;
       users.validateLogin(data, {
@@ -55,6 +57,20 @@ var loginIO = io
         }
       })
     });
+
+    socket.on('addUser', function(data, fn){
+      data.socketId = socketId;
+      users.addUser(data, {
+        success:function(user){
+          loggedIn = true;
+          fn({msg:"success", user:new coreData.User(user)});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      })
+    });
+
 
     socket.on('getOnlineUsers', function(data, fn){
 
@@ -155,16 +171,48 @@ var loginIO = io
           fn({msg:'error'});
         }
       });
-
     });
-
   });
 
 
 var gameIO = io
   .of('/game')
   .on("connection", function(socket){
-    var loggedIn = false;
+    var loggedIn = false,
+        emitArr = [
+          'createGame',
+          'getGameByChallengeId',
+          'getGameByGameId',
+          'drawCard',
+          'quitGame',
+          'checkPlayersInGameRoom',
+          'setPlayerInGame',
+          'validateMove',
+          'sayUno',
+          'challengeUno'
+        ];
+
+    function makeSocketOn(callName) {
+      return function(data, fn) {
+        game.handleRequest(data, {
+          callName:callName,
+          success:function(game){
+            fn({msg:"success", data:game});
+          },
+          error:function(msg){
+            (msg) ? fn({msg:msg}) : fn({msg:"error"});
+          }
+        });
+      }
+    }
+
+    for(var i = 0, j = emitArr.length; i<j; i++){
+      socket.on( emitArr[i], makeSocketOn(emitArr[i]) );
+    }
+/*
+
+    // OLD WAY
+
     socket.on('createGame', function(data, fn){
       // send in challengeobj
       game.createGame(data, {
@@ -187,9 +235,9 @@ var gameIO = io
         }
       })
     });
-    socket.on('getGameById', function(data, fn){
+    socket.on('getGameByGameId', function(data, fn){
       // send in challengeobj
-      game.getGameById(data, {
+      game.getGameByGameId(data, {
         success:function(game){
           fn({msg:"success", data:game});
         },
@@ -280,46 +328,70 @@ var gameIO = io
         }
       })
     });
-
+*/
   });
 
 // use namespaces : turn this into a dispatch
 io.on('connection', function(socket){
   var socketId = socket.id;
   var clientIp = socket.request.connection.remoteAddress;
-  console.log("user connected from " + clientIp);
 
   socket.on('validate login', function(data){
 
   });
 
-
   socket.on('disconnect', function () {
     console.log('user disconnected - ID: ' + socketId);
     users.setUserOffline(socketId);
 
+    /*
     // if in game
       // set game to inactive
       // notify players
 
     // no matter what - set user.online = false
 
-
-
-    // general comments
-    /*
-
-    use id for users ( sending challenges)
-
-    finish accept and decline challenge
-
-
      */
-
-
   });
 });
 
+
+// remove old junk every 5 mins
+var minutes = 5, the_interval = minutes * 60 * 1000;
+setInterval(function() {
+  console.log("Its been 5 mins -> delete old stuff");
+
+  // delete completed games
+  game.removeCompletedGames({
+    success:function(){
+      console.log("Completed games successfully removed");
+    },
+    error:function(){
+      console.log("Error removing completed games")
+    }
+  });
+
+  // delete incomplete challenges
+  lobby.removeBadChallenges({
+    success:function(){
+      console.log("Completed games successfully removed");
+    },
+    error:function(){
+      console.log("Error removing completed games")
+    }
+  });
+
+  // delete chat older than 1 hour
+  chat.removeOldChat({
+    success:function(){
+      console.log("Completed games successfully removed");
+    },
+    error:function(){
+      console.log("Error removing completed games")
+    }
+  });
+
+}, the_interval);
 
 
 
@@ -344,10 +416,7 @@ app.use(function(req,res,next){
 });
 
 app.use('/', routes);
-app.use('/users', users);
-app.use('/chat', chat);
-app.use('/game', game);
-app.use('/lobby', lobby);
+// would include other routes if using routing instead of sockets
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

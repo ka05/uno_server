@@ -13,6 +13,13 @@ define('chat', ['jquery', 'knockout', 'coreData' ], function ( $, ko, coreData) 
           $.each(data.data, function(){
             _dataArray.push(new coreData.ChatMsg(this));
           });
+
+          coreData.activeChatData({
+            roomId:_roomId,
+            length:_dataArray.length,
+            msgs:_dataArray
+          });
+
           // scroll chat down
           $('#chat-cont').scrollTop(document.getElementById("chat-cont").scrollHeight);
           //$('#game-chat-cont').scrollTop(document.getElementById("game-chat-cont").scrollHeight);
@@ -21,15 +28,13 @@ define('chat', ['jquery', 'knockout', 'coreData' ], function ( $, ko, coreData) 
         Materialize.toast("error getting chat", 3000); // want to change this to a toast type message later
       }
     })
-
   };
 
-  self.sendChat = function(_btnId){
-    var $chatBtn = $('#' + _btnId),
-      $msgInput = $('#' + $chatBtn.attr("data-inputid") ),
+  self.sendChat = function(){
+    var $chatBtn = $('#chat-btn'),
+      $msgInput = $('#chat-msg'),
       msg = $msgInput.val(),
       roomId = $chatBtn.attr("data-roomid");
-
 
     if(msg != ""){
       coreData.mainSocket.emit('chatMsg', {"senderId":coreData.currUser().id, "message":msg, "roomId":roomId}, function(data){

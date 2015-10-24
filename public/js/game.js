@@ -5,16 +5,25 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
   var self = game = {},
       canSayUno = ko.observable(false),
       allPlayersPresent = ko.observable(false),
-      gameObj = ko.observable();
+      gameObj = ko.observable(),
+      getGameChatInterval = null;
 
   // TEMPORARY INIT
   initGame = function (_gameObj) {
     gameObj(new coreData.Game(_gameObj));
     util.userInGame(true);
 
+    coreData.activeChatData({
+      roomId:_gameObj._id,
+      length:0,
+      msgs:ko.observableArray()
+    });
+
     // continuously get chat msgs
-    setInterval(function () {
-      chat.getChatMsgs(gameObj().gameId(), coreData.gameChatMsgs);
+    getGameChatInterval = setInterval(function () {
+      if(util.userInGame()){
+        chat.getChatMsgs(gameObj().gameId(), coreData.gameChatMsgs);
+      }
     }, 1000);
 
 
@@ -28,29 +37,31 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
             for(var i = 0, j = _gameObj.players.length; i<j; i++){
               // if player is not inGame
               if( !_gameObj.players[i].inGame ){
-                clearInterval(getGameInterval);
+                clearInterval(getGameInterval); // clear get game interval
+                clearInterval(getGameChatInterval); // clear get game chat interval
                 allPlayersInGame = false; // for local logic
                 allPlayersPresent(false);
+                util.userInGame(false);
                 Materialize.toast(_gameObj.players[i].username + " has left the game so the game must end!", 3000);
                 // due to materialize toast callback issue
                 setTimeout(function(){
                   util.changeMainView("lobby");
                 }, 3000);
-
               }
             }
 
             // if everyone is still here
             if(allPlayersInGame){
               // if its not turn update stuff so i know whats going on
-              if(!gameObj().currPlayer().isMyTurn()){
+              if( ( !gameObj().currPlayer().isMyTurn() ) ||
+                ( gameObj().currPlayer().hand().length == 0 ) ){
                 updateView(_gameObj);
 
                 // if there is a winner
-
                 if(_gameObj.winner != ""){
-                  clearInterval(getGameInterval);
-                  //displayWinner();
+                  clearInterval(getGameInterval); // clear get game interval
+                  clearInterval(getGameChatInterval); // clear get game chat interval
+                  util.userInGame(false);
                   Materialize.toast(_gameObj.winner + ' has won this game!', 3000);
                   // ideally will want to send them back to lobby
                   setTimeout(function(){
@@ -59,7 +70,6 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
                 }
               }
             }
-
           },
           error:function(){
             console.log("error fetching game")
@@ -116,7 +126,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
         util.changeMainView("pre-game-lobby");
         util.preGameLobbyMsg("Waiting for other players, game will start when all players have joined.");
 
-        coreData.gameSocket.emit('setPlayerInGame', { challengeId:challengeId, userId:coreData.currUser().id }, function(data) { });
+        //coreData.gameSocket.emit('setPlayerInGame', { challengeId:challengeId, userId:coreData.currUser().id }, function(data) { });
 
         // start setInterval for getting challenge object
         var getChallengeInterval = setInterval(
@@ -147,13 +157,12 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
                 // all players in game so open game view
                 allPlayersPresent(true);
                 util.changeMainView("game");
-                console.log("gameobj: start:" + createGameRes.data);
                 initGame(createGameRes.data);
                 clearInterval(checkPlayersInGameRoomInterval);
               },
-              error:function(){
-                clearInterval(checkPlayersInGameRoomInterval);
-                console.log("checkPlayersInGameRoom error");
+              error:function(error){
+                //clearInterval(checkPlayersInGameRoomInterval);
+                console.log("checkPlayersInGameRoom: " + error);
               }
             });
           }, 1000);
@@ -170,9 +179,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
   self.joinGame = function(_challengeId){
     //var challengeId = event.target.getAttribute("data-id");
     coreData.gameSocket.emit('getGameByChallengeId', { challengeId:_challengeId, userId:coreData.currUser().id }, function(data){
-      //console.log("getGameByChallengeId res: " + JSON.stringify(data.data));
       if(data.msg == "success"){
-        console.log("joinGameCalled");
         // open game view
         util.changeMainView("game");
         initGame(data.data);
@@ -184,8 +191,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
 
   // periodically get game
   getGame = function(_gameId, _actions){
-    coreData.gameSocket.emit('getGameById', { gameId:_gameId, userId:coreData.currUser().id }, function(data){
-      //console.log("getGameById res: " + JSON.stringify(data.data));
+    coreData.gameSocket.emit('getGameByGameId', { gameId:_gameId, userId:coreData.currUser().id }, function(data){
       if(data.msg == "success"){
         _actions.success(data.data);
       }else{
@@ -198,7 +204,6 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
 
   function checkPlayersInGameRoom(_gameId, _actions){
     coreData.gameSocket.emit('checkPlayersInGameRoom', { gameId:_gameId, userId:coreData.currUser().id }, function(data){
-      //console.log("getGameById res: " + JSON.stringify(data.data));
       if(data.msg == "success"){
         _actions.success(data);
       }else{
@@ -212,9 +217,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
     // check if its my turn
     if (gameObj().currPlayer().isMyTurn()) {
       coreData.gameSocket.emit('drawCard', {gameId: gameObj().gameId(), userId: coreData.currUser().id}, function (data) {
-        //console.log("drawCard res: " + JSON.stringify(data.data));
         if (data.msg == "success") {
-          console.log(data.data);
           updateView(data.data);
         } else {
           console.log("error drawing card");
@@ -225,35 +228,12 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
     }
   };
 
-  self.displayDraw = function (_card) {
-    var cardCont = $('<div>').attr('data-cardname', _card.cardName).attr("class", "card-cont"),
-      cardEle = $('#' + _card.svgName).clone();
-
-    cardCont.append(cardEle);
-
-    $('#player-hand').append(cardCont);
-    addCardEvent(_card.svgName, function () {
-      validateMove(this)
-    });
-  };
-
-  addCardEvent = function (_cardId, _action) {
-    var a = document.getElementById(_cardId);
-
-    a.addEventListener("load", function () {
-      var card = a.contentDocument.getElementsByTagName("g");
-      card[0].addEventListener("click", function () {
-        _action()
-      }, false);
-    }, false);
-  };
-
-
+  // validates that the clicked card was a vild card to play
   validateMove = function (item, event) {
-    // make sure it is my turn ( obviously this check is done on the server as well )
+    // make sure it is my turn
+    // ( obviously more detailed checking is done on the server as well )
     if (gameObj().currPlayer().isMyTurn()) {
-      var svgName = event.target.getAttribute("data-id"),
-          chosenColor = "";
+      var svgName = event.target.getAttribute("data-id");
 
       // if it is wild or wild draw4
       if(svgName == "ww" || svgName == "wd"){
@@ -278,11 +258,11 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
     }
   };
 
+  // handle call to validate move
   handleValidateMove = function(_reqData){
     coreData.gameSocket.emit('validateMove',
       _reqData,
       function (data) {
-        //console.log("validate move res: " + JSON.stringify(data));
         if (data.msg == "success") {
           updateView(data.data);
         } else {
@@ -293,7 +273,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
   };
 
 
-  // wildcard
+  // wildcard color choice modal
   displayWildcardChoices = function (_callback) {
     // show modal to select color
     var $wildCardModal = $('#wildCardModal');
@@ -301,19 +281,14 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
 
     $wildCardModal.find('a').each(function () {
       $(this).on("click", function () {
-
         // set color
         _callback($(this).attr("data-color"));
-
         $wildCardModal.closeModal();
       });
     });
   };
 
-
-// GAME LOGIC
-
-
+  // say uno ( when you have one card left )
   self.sayUno = function () {
     if(gameObj().currPlayer().hand().length <= 2){
       coreData.gameSocket.emit('sayUno',
@@ -322,7 +297,6 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
           userId:coreData.currUser().id
         },
         function (data) {
-          //console.log("sayUno: " + JSON.stringify(data.data));
           if (data.msg == "success") {
             updateView(data.data);
             Materialize.toast("You said Uno", 3000);
@@ -335,6 +309,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
     }
   };
 
+  // challenge someone not saying uno
   self.challengeUno = function(){
     coreData.gameSocket.emit('challengeUno',
       {
@@ -342,7 +317,6 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
         userId:coreData.currUser().id
       },
       function (data) {
-        //console.log("challengeUno: " + JSON.stringify(data.data));
         if (data.msg == "success") {
           updateView(data.data);
           Materialize.toast("Challenge successful", 3000);
@@ -355,18 +329,18 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
 
   // exit game
   self.quitGame = function () {
-
-    coreData.gameSocket.emit('quitGame', {gameId: gameObj().gameId(), userId: coreData.currUser().id}, function (data) {
-      //console.log("quit game res: " + JSON.stringify(data.data));
-      if (data.msg == "success") {
-
-        util.changeMainView("lobby"); // send back to lobby
-        util.userInGame(false);
-      } else {
-        console.log("error quiting game");
-      }
-    });
-
+    coreData.gameSocket.emit('quitGame',
+      {
+        gameId: gameObj().gameId(),
+        userId: coreData.currUser().id
+      }, function (data) {
+        if (data.msg == "success") {
+          util.changeMainView("lobby"); // send back to lobby
+          util.userInGame(false);
+        } else {
+          console.log("error quiting game");
+        }
+      });
   };
 
   // variables
@@ -377,7 +351,6 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
   // functions
   self.validateMove = validateMove;
   self.draw = draw;
-
 
   return self;
 });
