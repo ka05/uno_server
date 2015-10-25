@@ -11,6 +11,7 @@ define('chat', ['jquery', 'knockout', 'coreData' ], function ( $, ko, coreData) 
         if(data.length != _dataArray().length){
           _dataArray.removeAll();
           $.each(data.data, function(){
+            console.log(this);
             _dataArray.push(new coreData.ChatMsg(this));
           });
 

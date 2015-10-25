@@ -36,6 +36,8 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   self.ChatMsg = function(_data){
     this.sender = _data.sender;
     this.message = _data.message;
+    this.timestamp = _data.timestamp;
+    this.timeSent = getTimeSent(_data.timestamp);
     this.senderColor = getSenderColor(_data.sender);
   };
 
@@ -101,6 +103,38 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
     this.currGC = ko.observable( _gameObj.discardPile[_gameObj.discardPile.length - 1].svgName ); // current discard pile card
     this.prevGC = ko.observable( getPrevGC(_gameObj.discardPile) );
     this.currColor = ko.observable( _gameObj.discardPile[_gameObj.discardPile.length - 1].color );
+  };
+
+  getTimeSent = function(_date){
+    var date = new Date(_date),
+        hours = date.getHoursNonMilitary(),
+        mins = date.getMinutesTwoDigits();
+
+
+
+    return hours + ":" + mins;
+  };
+
+  Date.prototype.getMinutesTwoDigits = function()
+  {
+    var retval = this.getMinutes();
+    if (retval < 10) {
+      return ("0" + retval.toString());
+    } else {
+      return retval.toString();
+    }
+  };
+
+  Date.prototype.getHoursNonMilitary = function()
+  {
+    var retval = this.getHours();
+
+    if (retval > 12) {
+      retval -= 12;
+    } else if (retval === 0) {
+      retval = 12;
+    }
+    return retval;
   };
 
   getPrevGC = function(_discardPile){
