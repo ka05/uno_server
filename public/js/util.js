@@ -123,8 +123,9 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         });
         break;
       case "profile":
-        $('ul.tabs').tabs();
-        //$('#img-cont').html("");
+
+        /*
+        // CIRCLE ANIMATION - WAS GOING TO USE FOR COUNTDOWN FOR PLAYER TURNS
         $('#img-cont').css("background-image", "url('media/users/user.png')");
         // do progress bar around user img
         var startColor = '#6FD57F';
@@ -150,6 +151,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
           from: {color: startColor},
           to: {color: endColor}
         });
+        */
         break;
       case "lobby":
         //userInGame(false);

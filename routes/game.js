@@ -997,6 +997,12 @@ module.exports = function(db) {
                 if (err === null) {
                   console.log("updated win count for " + game.players[currPlayerIndex].username);
 
+                  updateUsersPlayedGamesCount(game, {
+                    success:function(){ console.log("successfully updated user gamesPlayed count"); },
+                    error:function(){ console.log("error updating user gamesPlayed count"); }
+                  });
+
+
                   // make sure challenges collection exists -> delete challenge
                   db.collectionNames("challenges", function (err, names) {
                     if (names.length > 0) {
@@ -1275,6 +1281,20 @@ module.exports = function(db) {
         _actions.error();
       }
     });
+  };
+
+  updateUsersPlayedGamesCount = function(_gameObj, _actions){
+
+    for (var i = 0; i < _gameObj.players.length; i++) {
+      db.users.update({_id:new ObjectID(_gameObj.players[i].id)}, {$inc:{ gamesPlayed:1 }}, function(){
+        if (err === null) {
+          _actions.success();
+        } else {
+          _actions.error();
+        }
+      });
+    }
+
   };
 
 

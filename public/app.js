@@ -12,6 +12,7 @@ requirejs.config({
     materialize: 'lib/materialize',
     socketio: 'lib/socket.io',
     hammerjs: 'lib/hammerjs',
+    "jquery-hammerjs": 'lib/jquery.hammer',
     velocity: 'lib/velocity',
 
     // main modules
@@ -24,7 +25,7 @@ requirejs.config({
     //  exports: 'io'
     //},
     'materialize':{
-      deps: ['jquery', 'hammerjs', 'velocity']
+      deps: ['jquery', 'hammerjs', 'jquery-hammerjs', 'velocity']
     }
   }
 });
@@ -80,20 +81,12 @@ define('uno', ['jquery', 'knockout', 'coreData', 'util', 'chat', 'game', 'lobby'
     });
   };
 
-
-
-  // functions bound
-
-
   // main modules
   self.util = util;
   self.chat = chat;
   self.game = game;
   self.lobby = lobby;
   self.coreData = coreData;
-
-  // plugins
-  //self.Materialize = Materialize;
 
   return self;
 });
@@ -106,7 +99,7 @@ define(['uno', 'jquery', 'knockout'], function (uno, $, ko) {
 
 
   // fix sideNav thing later - issue with shimming in materializejs
-  //$(".button-collapse").sideNav();
+  $(".button-collapse").sideNav();
 
   // check browser version
   if(uno.util.checkVersion()){

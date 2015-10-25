@@ -21,6 +21,7 @@ var CoreData = {};
     this.password = _data.password;
     this.socketId = _data.socketId;
     this.winCount = _data.winCount;
+    this.gamesPlayed = _data.gamesPlayed;
     this.online = _data.online;
     this.token = _data.token;
   };

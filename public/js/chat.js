@@ -11,7 +11,6 @@ define('chat', ['jquery', 'knockout', 'coreData' ], function ( $, ko, coreData) 
         if(data.length != _dataArray().length){
           _dataArray.removeAll();
           $.each(data.data, function(){
-            console.log(this);
             _dataArray.push(new coreData.ChatMsg(this));
           });
 
@@ -23,7 +22,6 @@ define('chat', ['jquery', 'knockout', 'coreData' ], function ( $, ko, coreData) 
 
           // scroll chat down
           $('#chat-cont').scrollTop(document.getElementById("chat-cont").scrollHeight);
-          //$('#game-chat-cont').scrollTop(document.getElementById("game-chat-cont").scrollHeight);
         }
       } else{
         Materialize.toast("error getting chat", 3000); // want to change this to a toast type message later

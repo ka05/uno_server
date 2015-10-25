@@ -8,23 +8,26 @@ block content
     script(type="text/html", id="profile")
         // SHOW USER INFO
         div(class="col s6 center" id="user-banner")
-            div(id="img-cont")
-                //span(class="add-photo-txt") Upload Photo
-            h3(data-bind="text:coreData.currUser().fullname")
-            //button(class="btn waves-effect waves-light", data-bind='click:editAccount') Edit
-            div#user-info
-                br
-                p UID:
-                    span(data-bind="text:coreData.currUser().id")
-                br
-                p Email:
-                    span(data-bind="text:coreData.currUser().email")
-                br
-                p Username:
-                    span(data-bind="text:coreData.currUser().username")
-                br
-                p Win Count:
-                    span(data-bind="text:coreData.currUser().winCount")
+        .row
+            .col.s12
+                .card
+                    .card-content
+                        .card-title.grey-text.text-darken-4 Profile
+                        div(style="margin:0 auto;width:300px;")
+                            img(src='media/users/user.png')
+                        .collection.with-header
+                            .collection-header
+                                h4(data-bind="text:coreData.currUser().username")
+                            .collection-item
+                                p Email:
+                                    span(data-bind="text:coreData.currUser().email")
+                            .collection-item
+                                p Win Count:
+                                    span(data-bind="text:coreData.currUser().winCount")
+                            .collection-item
+                                p Games Played:
+                                    span(data-bind="text:coreData.currUser().gamesPlayed")
+
 
     script(type="text/html", id="login")
         div(class="main-wrap")

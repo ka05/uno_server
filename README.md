@@ -33,6 +33,7 @@ Fix Issues
 -quitting game ( other use cases )
   -refreshing browser
   -navigating elsewhere
+  -closing browser
   - ...
   
 BUGS:
