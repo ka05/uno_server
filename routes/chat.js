@@ -87,7 +87,7 @@ module.exports = function(db){
           // check if they exist as a player in the given gameId
           db.games.find({ "_id":new ObjectID(_data.roomId) }).toArray(function (err, games) {
             if(err === null){
-              if (names.length > 0) {
+              if (games.length > 0) {
                 if(findPlayerInGame(_data.senderId, games[0].players)){
                   db.chatMsgs.insert({
                     "sender":senderUsername,

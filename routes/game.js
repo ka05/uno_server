@@ -1110,24 +1110,30 @@ module.exports = function(db) {
       // check if any players have one card left
       var playerIndexWithOneCard = findPlayerWithOneCard(game);
       if (playerIndexWithOneCard != -1) {
-        // if they did not call uno yet
-        if (!game.players[playerIndexWithOneCard].calledUno) {
-          console.log("They didnt call uno yet, call them out on that");
+        if(game.players[playerIndexWithOneCard].id != playerId){
+          // if they did not call uno yet
+          if (!game.players[playerIndexWithOneCard].calledUno) {
+            console.log("They didnt call uno yet, call them out on that");
 
-          // draw 2 cards to that player (as a penalty for not saying uno)
-          drawToPlayerByIndex(game, playerIndexWithOneCard, 2);
-          calculatePlayersHandCount(game.players); // recalculate card count for players
+            // draw 2 cards to that player (as a penalty for not saying uno)
+            drawToPlayerByIndex(game, playerIndexWithOneCard, 2);
+            calculatePlayersHandCount(game.players); // recalculate card count for players
 
-          // update the game
-          db.games.update({"_id": new ObjectID(gameId)}, game, function (err) {
-            console.log("update err: " + err);
-            (err === null) ? _actions.success(new coreData.SensitiveGame(game, playerId)) : _actions.error();
-          });
+            // update the game
+            db.games.update({"_id": new ObjectID(gameId)}, game, function (err) {
+              console.log("update err: " + err);
+              (err === null) ? _actions.success(new coreData.SensitiveGame(game, playerId)) : _actions.error();
+            });
 
-        } else {
-          console.log("They have already called uno.");
-          _actions.error("They have already called uno.");
+          } else {
+            console.log("They have already called uno.");
+            _actions.error("They have already called uno.");
+          }
+        } else{
+          console.log("You cant challenge yourself for having uno");
+          _actions.error("You cant challenge yourself for having uno");
         }
+
       } else {
         console.log("Nobody has 1 card left, so you cant call them out.");
         _actions.error("Nobody has 1 card left, so you cant call them out.");
@@ -1286,7 +1292,7 @@ module.exports = function(db) {
   updateUsersPlayedGamesCount = function(_gameObj, _actions){
 
     for (var i = 0; i < _gameObj.players.length; i++) {
-      db.users.update({_id:new ObjectID(_gameObj.players[i].id)}, {$inc:{ gamesPlayed:1 }}, function(){
+      db.users.update({_id:new ObjectID(_gameObj.players[i].id)}, {$inc:{ gamesPlayed:1 }}, function(err){
         if (err === null) {
           _actions.success();
         } else {
@@ -1433,6 +1439,16 @@ module.exports = function(db) {
     var playerIndexWithOneCard = -1;
     for (var i = 0, j = _gameObj.players.length; i < j; i++) {
       console.log("playerIndexWithOneCard handlen: " + _gameObj.players[i].hand.length);
+
+      // think about whos turn it is here
+      // var playerIndexWTurn = getplayerIndexForTurn(_gameObj);
+      // if( player with uno -> was previous player ( player before playerIndexWTurn ) )
+      // then they return the index
+
+
+
+      // if player w uno -> was not previous player 
+
       if (_gameObj.players[i].hand.length == 1) {
         playerIndexWithOneCard = i;
       }

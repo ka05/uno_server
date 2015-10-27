@@ -192,7 +192,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       // validate login credentials
       validateLogin(_credentials, {
         success:function(user){
-          console.log("loggedIn user: " + user);
+          //console.log("loggedIn user: " + user);
           changeMainView("lobby");
           userLoggedIn(true);
           coreData.currUser(user);

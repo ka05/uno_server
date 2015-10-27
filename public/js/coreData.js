@@ -3,11 +3,12 @@
  */
 define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   var self = coreData = {},
-
+    //uri = "192.168.2.13";
+    uri = "localhost";
     // socket io connections
     socket = io(),
-    mainSocket = io.connect('http://localhost:3000/login'),
-    gameSocket = io.connect('http://localhost:3000/game'),
+    mainSocket = io.connect('http://' + uri + ':3000/login'),
+    gameSocket = io.connect('http://' + uri + ':3000/game'),
 
     // LOBBY STUFF
     activeUsers = ko.observableArray(),

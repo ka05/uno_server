@@ -45,12 +45,16 @@ html
                         li.chat-icon-li(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
                             a#in-game-chat-btn(class="material-icons", title="chat") chat_bubble_outline
                     ul(class="side-nav collection" id="mobile-nav")
-                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="Play")
-                            span(class="") Play
-                            i(class="small material-icons menu-icon") perm_identity
-                        li(data-bind="click:util.handleNavigation, visible:util.userLoggedIn", data-view-name="login")
-                            span(class="") Login
-                            i(class="small material-icons menu-icon") input
+                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
+                            a#nav-profile(href="#") Lobby
+                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
+                            a#nav-profile(href="#") Profile
+                        li(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
+                            a#nav-login(href="#") Login
+                        li(data-bind="visible:util.userLoggedIn, click:util.logout")
+                            a#nav-logout(href="#") Logout
+                        li.chat-icon-li(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
+                            a#in-game-chat-btn(class="material-icons", title="chat") chat_bubble_outline
         // Modal Structure
         div#challengeUserModal(class="modal")
             div(class="modal-content")

@@ -107,9 +107,11 @@ module.exports = function(db) {
         if (items[i].status != "cancelled" && items[i].status != "declined") {
           if (items[i].challenger.status != "cancelled") {
             if (checkAllUsersResponded(items[i])) {
-              if (checkAllDeclined(items[i])) {
+              if (checkAllStatus(items[i], "declined")) {
                 newStatus = "declined";
-              } else {
+              } else if (checkAllStatus(items[i], "cancelled")) {
+                newStatus = "cancelled";
+              }else {
                 newStatus = "all responded";
               }
             }
@@ -211,10 +213,10 @@ module.exports = function(db) {
     return !oneNotResponded;
   };
 
-  checkAllDeclined = function (_challenge) {
+  checkAllStatus = function (_challenge, _status) {
     var oneNotDeclined = false;
     for (var i = 0, j = _challenge.usersChallenged.length; i < j; i++) {
-      if (_challenge.usersChallenged[i].status != "declined") {
+      if ( (_challenge.usersChallenged[i].status != _status)) {
         oneNotDeclined = true;
       }
     }

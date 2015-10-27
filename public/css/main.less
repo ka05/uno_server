@@ -13,18 +13,21 @@ nav{
   margin-left:2em;
 }
 
+//@uri:"192.168.2.13";
+@uri:"localhost";
+
 @font-face {
   font-family: 'Material Icons';
   font-style: normal;
   font-weight: 400;
   // Refer to this later when this is uploaded on a server:
   // http://google.github.io/material-design-icons/#icon-font-for-the-web
-  src: url(http://localhost:3000/css/font/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src: url("http://@{uri}:3000/css/font/MaterialIcons-Regular.eot"); /* For IE6-8 */
   src: local('Material Icons'),
     local('MaterialIcons-Regular'),
-    url(http://localhost:3000/css/font/MaterialIcons-Regular.woff2) format('woff2'),
-    url(http://localhost:3000/css/font/MaterialIcons-Regular.woff) format('woff'),
-    url(http://localhost:3000/css/font/MaterialIcons-Regular.ttf) format('truetype');
+    url("http://@{uri}:3000/css/font/MaterialIcons-Regular.woff2") format('woff2'),
+    url("http://@{uri}:3000/css/font/MaterialIcons-Regular.woff") format('woff'),
+    url("http://@{uri}:3000/css/font/MaterialIcons-Regular.ttf") format('truetype');
 
   //src: local('Material Icons'), local('MaterialIcons-Regular'), url(http://fonts.gstatic.com/s/materialicons/v7/2fcrYFNaTjcS6g4U3t-Y5ZjZjT5FdEJ140U2DJYC3mY.woff2) format('woff2');
 }
