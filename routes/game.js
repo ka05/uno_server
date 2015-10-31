@@ -786,40 +786,6 @@ module.exports = function(db) {
   };
 
 
-  self.handleRequest = function(_data, _actions){
-    switch(_actions.callName){
-      case 'createGame':
-        createGame(_data, _actions);
-        break;
-      case 'getGameByChallengeId':
-        getGameByChallengeId(_data, _actions);
-        break;
-      case 'getGameByGameId':
-        getGameByGameId(_data, _actions);
-        break;
-      case 'drawCard':
-        drawCard(_data, _actions);
-        break;
-      case 'quitGame':
-        quitGame(_data, _actions);
-        break;
-      case 'checkPlayersInGameRoom':
-        checkPlayersInGameRoom(_data, _actions);
-        break;
-      case 'setPlayerInGame':
-        setPlayerInGame(_data, _actions);
-        break;
-      case 'validateMove':
-        validateMove(_data, _actions);
-        break;
-      case 'sayUno':
-        sayUno(_data, _actions);
-        break;
-      case 'challengeUno':
-        challengeUno(_data, _actions);
-        break;
-    }
-  };
 
   /**** GAME CALLS ****/
 
@@ -828,72 +794,75 @@ module.exports = function(db) {
 
     // find challenge
     db.challenges.find({"_id": new ObjectID(_data.challengeId)}).toArray(function (err, items) {
+      if (items.length > 0) {
+        // ensure the user trying to start this game is in fact the challenger
+        if (_data.userId == items[0].challenger.id) {
 
-      // ensure the user trying to start this game is in fact the challenger
-      if (_data.userId == items[0].challenger.id) {
+          // build array
+          var gameUserIds = [items[0].challenger.id];
 
-        // build array
-        var gameUserIds = [items[0].challenger.id];
-
-        for (var i = 0, j = items[0].usersChallenged.length; i < j; i++) {
-          if (items[0].usersChallenged[i].status == "accepted") {
-            gameUserIds.push(items[0].usersChallenged[i]._id);
-          }
-        }
-
-        async.mapSeries(gameUserIds, function (id, callback) {
-
-          db.users.find({'_id': new ObjectID(id)}).toArray(function (err, res) {
-            if (err) return callback(err);
-            callback(null, {
-              _id: res[0]._id,
-              username: res[0].username
-            });
-          })
-        }, function (err, results) {
-          // results is an array of names
-          var game = createGameObj(results, items[0]._id);
-
-          // run intitial deal to players
-          dealToPlayers(game.deck, game.players);
-          calculatePlayersHandCount(game.players);
-
-          // after dealing -> set active player to the host
-          // unless action card was first card dealt then apply that action and go to next player
-          dealInitDiscardCard(game, items[0].challenger.id);
-
-          // create game with generated ID
-          db.games.insert(game, function (err, result) {
-            // update challenge status to "ready" => ready to play
-            // ( implies user1, "the challenger" has created the game and launched it )
-            // Game cannot start until all players have entered gameroom
-            if (err === null) {
-              // set challenger inGame
-              setPlayerInGame({
-                challengeId: _data.challengeId,
-                userId: items[0].challenger.id
-              }, {
-                success: function () {
-
-                  // figure out what status is when
-
-                  // update game status to ready - allows all players to join game room and begin
-                  db.challenges.update({_id: items[0]._id}, {'$set': {status: "ready"}}, function (err) {
-                    (err === null) ? _actions.success(new coreData.SensitiveGame(game, _data.userId)) : _actions.error()
-                  });
-                },
-                error: function () {
-                  _actions.error();
-                }
-              });
-            } else {
-              //error
-              _actions.error()
+          for (var i = 0, j = items[0].usersChallenged.length; i < j; i++) {
+            if (items[0].usersChallenged[i].status == "accepted") {
+              gameUserIds.push(items[0].usersChallenged[i]._id);
             }
+          }
+
+          async.mapSeries(gameUserIds, function (id, callback) {
+
+            db.users.find({'_id': new ObjectID(id)}).toArray(function (err, res) {
+              if (err) return callback(err);
+              callback(null, {
+                _id: res[0]._id,
+                username: res[0].username
+              });
+            })
+          }, function (err, results) {
+            // results is an array of names
+            var game = createGameObj(results, items[0]._id);
+
+            // run intitial deal to players
+            dealToPlayers(game.deck, game.players);
+            calculatePlayersHandCount(game.players);
+
+            // after dealing -> set active player to the host
+            // unless action card was first card dealt then apply that action and go to next player
+            dealInitDiscardCard(game, items[0].challenger.id);
+
+            // create game with generated ID
+            db.games.insert(game, function (err, result) {
+              // update challenge status to "ready" => ready to play
+              // ( implies user1, "the challenger" has created the game and launched it )
+              // Game cannot start until all players have entered gameroom
+              if (err === null) {
+                // set challenger inGame
+                setPlayerInGame({
+                  challengeId: _data.challengeId,
+                  userId: items[0].challenger.id
+                }, {
+                  success: function () {
+
+                    // figure out what status is when
+
+                    // update game status to ready - allows all players to join game room and begin
+                    db.challenges.update({_id: items[0]._id}, {'$set': {status: "ready"}}, function (err) {
+                      (err === null) ? _actions.success(new coreData.SensitiveGame(game, _data.userId)) : _actions.error()
+                    });
+                  },
+                  error: function () {
+                    _actions.error();
+                  }
+                });
+              } else {
+                //error
+                _actions.error()
+              }
+            });
           });
-        });
-      } else {
-        _actions.error("You are not the owner");
+        } else {
+          _actions.error("You are not the owner");
+        }
+      }else{
+        _actions.error("error creating game");
       }
     });
   };
@@ -902,15 +871,20 @@ module.exports = function(db) {
   checkPlayersInGameRoom = function (_data, _actions) {
     // get gameObj
     db.games.find({"_id": new ObjectID(_data.gameId)}).toArray(function (err, items) {
-      if (checkAllPlayersPresent(items[0].players)) {
-        console.log("all players present");
-        // change game status to inprogress ( start game ) if all players are present
-        db.games.update({"_id": new ObjectID(_data.gameId)}, {'$set': {status: "inprogress"}}, function (err, res) {
-          (err === null) ? _actions.success(res) : _actions.error();
-        });
-      } else {
-        // at least one player is abscent or not yet in the game
-        console.log("one absent");
+      if (items.length > 0) {
+        if (checkAllPlayersPresent(items[0].players)) {
+          console.log("all players present");
+          // change game status to inprogress ( start game ) if all players are present
+          db.games.update({"_id": new ObjectID(_data.gameId)}, {'$set': {status: "inprogress"}}, function (err, res) {
+            (err === null) ? _actions.success(res) : _actions.error();
+          });
+        } else {
+          // at least one player is abscent or not yet in the game
+          console.log("one absent");
+          _actions.error();
+        }
+      }else{
+        console.log("error checking players in game room");
         _actions.error();
       }
     });
@@ -978,7 +952,6 @@ module.exports = function(db) {
           if (checkValidMove(playedCard, game.discardPile)) {
             console.log("ValidateMove player: " + game.players[currPlayerIndex].username);
 
-            // reset calledUno for all players
             resetCallUnoEveryone(game);
 
             // still have more than one card - play card
@@ -1042,6 +1015,10 @@ module.exports = function(db) {
             });
 
           } else {
+            // move wasnt valid -
+            //handleResetCalledUno(game, playerId, currPlayerIndex);
+            // move to draw
+
             console.log("Invalid Move");
             _actions.error("Invalid Move");
           }
@@ -1055,6 +1032,17 @@ module.exports = function(db) {
       }
     });
   };
+
+  function handleResetCalledUno(_gameObj, _currPlayerIndex){
+    // reset calledUno for me
+    var playersIndexWithOneCard = findPlayersWithOneCard(_gameObj);
+
+    // one of the players who has one card is me
+    if(playersIndexWithOneCard.indexOf(_currPlayerIndex) != -1){
+      _gameObj.players[_currPlayerIndex].calledUno = false;
+    }
+  }
+
 
 // draw a card
   drawCard = function (_data, _actions) {
@@ -1074,6 +1062,9 @@ module.exports = function(db) {
           refillDeck(game);
         }
 
+        resetCallUnoEveryone(game);
+        handleResetCalledUno(game, currPlayerIndex);
+
         // draw card and add to hand
         addCardToPlayerHand(game.players[currPlayerIndex].hand, cardDrawn);
         calculatePlayersHandCount(game.players); // terrible -> try to do this a better way later on
@@ -1087,7 +1078,6 @@ module.exports = function(db) {
           setPlayerTurnByIndex(game.players, getNextPlayerIndex(game, currPlayerIndex)); // set next players turn
         }
 
-        // ( NEED TO CHANGE THIS TO ONLY UPDATE WHAT IS NECCESSARY NTO THE WHOL OBJ )
         db.games.update({"_id": new ObjectID(gameId)}, game, function (err) {
           console.log("update err: " + err);
           (err === null) ? _actions.success(new coreData.SensitiveGame(game, playerId)) : _actions.error();
@@ -1101,15 +1091,21 @@ module.exports = function(db) {
 
   };
 
-// when a player wants to call out another player for not saying uno.
+  // when a player wants to call out another player for not saying uno.
   challengeUno = function (_data, _actions) {
     var gameId = _data.gameId,
       playerId = _data.userId;
 
     getGameById({gameId: gameId, playerId: playerId}, _actions, function (game) {
+
+      // first check the card that was last played ( account for skip, reverse, +2, Wild +4 )
+
+
       // check if any players have one card left
       var playerIndexWithOneCard = findPlayerWithOneCard(game);
       if (playerIndexWithOneCard != -1) {
+
+        // make sure they arent calling themselves out for not saying uno
         if(game.players[playerIndexWithOneCard].id != playerId){
           // if they did not call uno yet
           if (!game.players[playerIndexWithOneCard].calledUno) {
@@ -1199,16 +1195,16 @@ module.exports = function(db) {
   quitGame = function (_data, _actions) {
     var gameId = _data.gameId,
       playerId = _data.userId;
-
     // change status of game - delete game obj
     getGameById({gameId: gameId, playerId: playerId}, _actions, function (_game) {
       // change player status
       db.games.update({
         "_id": new ObjectID(_data.gameId),
         "players.id": new ObjectID(_data.userId)
-      }, {'$set': {"players.$.inGame": false}}, function (err, items) {
+      }, {'$set': {"players.$.inGame": false}}, function (err) {
         if (err === null) {
-          console.log("quitgame: update player: " + JSON.stringify(items[0]));
+          console.log('player quit')
+          //console.log("quitgame: update player: " + JSON.stringify(items[0]));
           // change game status to incomplete - meaning that someone quit
           db.games.update({"_id": new ObjectID(_data.gameId)}, {'$set': {status: "incomplete"}}, function (err, items) {
             (err === null) ? _actions.success() : _actions.error();
@@ -1262,17 +1258,21 @@ module.exports = function(db) {
     // get game object
     db.games.find({"_id": new ObjectID(_data.gameId)}).toArray(function (err, items) {
       // if there were no errors
-      if (err === null) {
-        // make sure they are in the game
-        if (findPlayerInGame(_data.playerId, items[0].players)) {
+      if (items.length > 0) {
+        if (err === null) {
+          // make sure they are in the game
+          if (findPlayerInGame(_data.playerId, items[0].players)) {
 
-          _callback(items[0]); // send game object back
+            _callback(items[0]); // send game object back
 
+          } else {
+            _actions.error()
+          }
         } else {
-          _actions.error()
+          // player isnt part of the game - dont let them have it
+          _actions.error();
         }
-      } else {
-        // player isnt part of the game - dont let them have it
+      }else{
         _actions.error();
       }
     });
@@ -1436,24 +1436,46 @@ module.exports = function(db) {
   }
 
   function findPlayerWithOneCard(_gameObj) {
-    var playerIndexWithOneCard = -1;
-    for (var i = 0, j = _gameObj.players.length; i < j; i++) {
-      console.log("playerIndexWithOneCard handlen: " + _gameObj.players[i].hand.length);
+    var playerIndexWithOneCard = -1,
+        playerIndexWTurn = getplayerIndexForTurn(_gameObj),
+        prevPlayerIndex = getPrevPlayerIndex(_gameObj, playerIndexWTurn),
+        twoBackPlayerIndex = getPrevPlayerIndex(_gameObj, prevPlayerIndex);
 
-      // think about whos turn it is here
-      // var playerIndexWTurn = getplayerIndexForTurn(_gameObj);
-      // if( player with uno -> was previous player ( player before playerIndexWTurn ) )
-      // then they return the index
+    // check last card played for action card
+    if( (_gameObj.discardPile[_gameObj.discardPile.length-1].value == "wilddraw4") ||
+      (_gameObj.discardPile[_gameObj.discardPile.length-1].value == "draw2") ){
 
+      // reset "calledUno" prop for the player who the action card applied to
+      // ( we have to do this because they no longer have one card left )
+      _gameObj.players[prevPlayerIndex].calledUno = false;
 
-
-      // if player w uno -> was not previous player 
-
-      if (_gameObj.players[i].hand.length == 1) {
-        playerIndexWithOneCard = i;
+      if(_gameObj.players[twoBackPlayerIndex].hand.length == 1){
+        playerIndexWithOneCard = twoBackPlayerIndex;
+      }
+    }else if(_gameObj.discardPile[_gameObj.discardPile.length-1].value == "skip"){
+      // it skipped someone so we need to check the person two back for if they have one card left
+      if(_gameObj.players[twoBackPlayerIndex].hand.length == 1){
+        playerIndexWithOneCard = twoBackPlayerIndex;
+      }
+    }else{
+      // regular card - or wild
+      if(_gameObj.players[prevPlayerIndex].hand.length == 1){
+        playerIndexWithOneCard = prevPlayerIndex;
       }
     }
     return playerIndexWithOneCard;
+  }
+
+  function findPlayersWithOneCard(_gameObj){
+    var indexArr = [];
+
+    for (var i = 0, j = _gameObj.players.length; i < j; i++) {
+      if (_gameObj.players[i].hand.length == 1) {
+        indexArr.push(i);
+      }
+    }
+
+    return indexArr;
   }
 
 
@@ -1495,7 +1517,10 @@ module.exports = function(db) {
 // resets all players calledUno
   function resetCallUnoEveryone(_gameObj) {
     for (var i = 0; i < _gameObj.players.length; i++) {
-      _gameObj.players[i].calledUno = false;
+      // if they dont really have 1 card left then reset their calledUno prop
+      if(_gameObj.players[i].hand.length != 1){
+        _gameObj.players[i].calledUno = false;
+      }
     }
   }
 
@@ -1517,8 +1542,8 @@ module.exports = function(db) {
       case "wild":
       case "wilddraw4":
         _gameObj.deck = shuffle(_gameObj.deck); // shuffle deck
-        dealInitDiscardCard(_gameObj); // deal new card
-        setPlayerTurnById(_gameObj.players, _challengerId);
+        dealInitDiscardCard(_gameObj, _challengerId); // deal new card
+        //setPlayerTurnById(_gameObj.players, _challengerId);
         break;
       case "reverse":
       case "skip":
@@ -1554,9 +1579,15 @@ module.exports = function(db) {
         setPlayerTurns(_gameObj, currPlayerIndex, "skip");
         break;
       case "reverse":
-        // reverse order
-        _gameObj.isReversed = !_gameObj.isReversed; // change isReversed
-        setPlayerTurns(_gameObj, currPlayerIndex, "");
+        // if there are 2 players
+        if(_gameObj.players.length == 2){
+          // reverse acts like a skip
+          setPlayerTurns(_gameObj, currPlayerIndex, "skip");
+        }else{ // there are more than 2 players
+          // reverse order
+          _gameObj.isReversed = !_gameObj.isReversed; // change isReversed
+          setPlayerTurns(_gameObj, currPlayerIndex, "");
+        }
         break;
       case "skip":
         // skip next player
@@ -1590,6 +1621,14 @@ module.exports = function(db) {
     }
   }
 
+  function getplayerIndexForTurn(_gameObj){
+    for (var i = 0, j = _gameObj.players.length; i < j; i++) {
+      if(_gameObj.players[i].isMyTurn == true){
+        return i;
+      }
+    }
+  }
+
 // grabs the index of the next player accounting for reversed order
   function getNextPlayerIndex(_gameObj, _currPlayerIndex) {
     var nextPlayerIndex = 0;
@@ -1599,6 +1638,23 @@ module.exports = function(db) {
       nextPlayerIndex = (_currPlayerIndex == 0) ? (_gameObj.players.length - 1) : (_currPlayerIndex - 1);
     } else {
       console.log("not reversed");
+      // if the order is regular ( clockwise )
+      nextPlayerIndex = (_currPlayerIndex == _gameObj.players.length - 1) ? 0 : (_currPlayerIndex + 1);
+    }
+    console.log("getNextPlayerIndex: nextPlayerIndex: " + nextPlayerIndex);
+    return nextPlayerIndex;
+  }
+
+  function getPrevPlayerIndex(_gameObj, _currPlayerIndex) {
+    var nextPlayerIndex = 0;
+
+    // opposite of next player
+    if (!_gameObj.isReversed) {
+      console.log("not reversed");
+      // if the order is reversed ( counter-clockwise )
+      nextPlayerIndex = (_currPlayerIndex == 0) ? (_gameObj.players.length - 1) : (_currPlayerIndex - 1);
+    } else {
+      console.log("is reversed");
       // if the order is regular ( clockwise )
       nextPlayerIndex = (_currPlayerIndex == _gameObj.players.length - 1) ? 0 : (_currPlayerIndex + 1);
     }

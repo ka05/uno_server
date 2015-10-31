@@ -13,6 +13,11 @@ nav{
   margin-left:2em;
 }
 
+@uno_red:#F15858;
+@uno_blue:#5861AC;
+@uno_green:#11AA4B;
+@uno_yellow:#FBAA19;
+
 //@uri:"192.168.2.13";
 @uri:"localhost";
 
@@ -132,7 +137,7 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 .btn-sm{
-  font-size: 16px;
+  font-size: 12px;
   padding: 0 2rem;
 }
 
@@ -210,6 +215,17 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 .card-view{
   float:left;
 }
+.hand-card{
+  cursor: pointer;
+  &:hover img{
+    -webkit-filter:drop-shadow(0px 0px 10px black);
+  }
+}
+.hover-reveal{
+  &:hover{
+    z-index:999;
+  }
+}
 
 #deck-view{
   position: absolute;
@@ -217,10 +233,9 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 
-
 /* GAME VIEW - PLAYERS VIEW */
 #players{
-  background: #ddd;
+  background: rgba(255, 255, 255, 0.6);
   height:100px;
 }
 
@@ -241,7 +256,11 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 #action-bar{
-  margin:0 1em;
+  margin:1em;
+
+  .btn-main{
+    margin:0;
+  }
 }
 
 .hand-count{
@@ -251,6 +270,15 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   position:absolute;
   top:0;
   right:-5px;
+  padding:2px 6px;
+}
+.called-uno{
+  background:red;
+  border-radius:15px;
+  color:#fff;
+  position:absolute;
+  top:0;
+  left:-5px;
   padding:2px 6px;
 }
 
@@ -372,13 +400,33 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   }
   li{
     color:#333;
+    border-bottom: 1px solid #ccc;
 
     &:hover{
       cursor:pointer;
       color: #ee280e;
     }
+
+  }
+  .side-nav-player{
+    padding-top:1em;
+
+    &:hover{
+      background: none !important;
+    }
+
+    .circle-img{
+      border-radius:50px;
+    }
+
+    h4{
+      margin:0;
+      line-height: 0;
+    }
   }
 }
+
+
 
 // Profile
 #img-cont{
@@ -502,6 +550,7 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 .challenge-text{
   cursor: pointer;
   color:#333333 !important;
+  font-size: .8em;
   a{
     color:#333333 !important;
 
@@ -534,7 +583,11 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 
 }
 
-//#lobby-main{
+#lobby-main{
+  .collection-item{
+    padding-left:.5em;
+  }
+
 //  .collection.with-header .collection-item{
 //    padding:0em;
 //    //i{
@@ -545,7 +598,18 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 //      display: block;
 //    }
 //  }
-//}
+}
+
+.challenge-cont{
+  float:left;
+  width:50%;
+  min-height:41px;
+  max-height: 200px;
+  overflow-y: scroll;
+  &.bd-right{
+    border-right: 1px solid #ccc;
+  }
+}
 
 @media only screen and (max-width: 601px){
   .login-card {
@@ -581,16 +645,16 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 
 
 .active-color-red{
-  background: red;
+  background: @uno_red;
 }
 .active-color-blue{
-  background: blue;
+  background: @uno_blue;
 }
 .active-color-yellow{
-  background: yellow;
+  background: @uno_yellow;
 }
 .active-color-green{
-  background: green;
+  background: @uno_green;
 }
 
 .generate-all-browser-transition(@val){

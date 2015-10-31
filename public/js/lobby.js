@@ -132,9 +132,26 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
       challengeFooterTmpl('challenge-cancel-footer-tmpl');
       $challengeRespModal.openModal();
 
+      var getChallengeInterval = setInterval(
+        function(){
+          util.getChallenge(currentSentChallenge().id, {
+            success:function(challenge){
+              currentSentChallenge(challenge);
+            },
+            error:function(){
+              console.log("error retrieving current sent challenge");
+            }
+          });
+        }, 1000);
+
+      $challengeRespModal.find('a.modal-close').on('click', function(){
+        clearInterval(getChallengeInterval);
+      });
+
       $('#btn-cancel-challenge').on("click", function(){
         // cancel challenge
         handleChallenge(currentSentChallenge().id, 0);
+        clearInterval(getChallengeInterval);
       });
     }
   };

@@ -192,10 +192,10 @@ var gameIO = io
           'challengeUno'
         ];
 
-    function makeSocketOn(callName) {
+    function makeSocketOn(funcName) {
       return function(data, fn) {
-        game.handleRequest(data, {
-          callName:callName,
+        game[funcName](data, {
+          funcName:funcName,
           success:function(game){
             fn({msg:"success", data:game});
           },
@@ -209,126 +209,7 @@ var gameIO = io
     for(var i = 0, j = emitArr.length; i<j; i++){
       socket.on( emitArr[i], makeSocketOn(emitArr[i]) );
     }
-/*
 
-    // OLD WAY
-
-    socket.on('createGame', function(data, fn){
-      // send in challengeobj
-      game.createGame(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-    socket.on('getGameByChallengeId', function(data, fn){
-      // send in challengeobj
-      game.getGameByChallengeId(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-    socket.on('getGameByGameId', function(data, fn){
-      // send in challengeobj
-      game.getGameByGameId(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-    socket.on('drawCard', function(data, fn){
-      // send in challengeobj
-      game.drawCard(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-    socket.on('quitGame', function(data, fn){
-      // send in challengeobj
-      game.quitGame(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-
-    socket.on('checkPlayersInGameRoom', function(data, fn){
-      // send in challengeobj
-      game.checkPlayersInGameRoom(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-
-    socket.on('setPlayerInGame', function(data, fn){
-      // send in challengeobj
-      game.setPlayerInGame(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-
-    socket.on('validateMove', function(data, fn){
-      // send in card, playerId, gameId
-      game.validateMove(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-
-    socket.on('sayUno', function(data, fn){
-      // send in card, playerId, gameId
-      game.sayUno(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-
-    socket.on('challengeUno', function(data, fn){
-      // send in card, playerId, gameId
-      game.challengeUno(data, {
-        success:function(game){
-          fn({msg:"success", data:game});
-        },
-        error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
-        }
-      })
-    });
-*/
   });
 
 // use namespaces : turn this into a dispatch
@@ -392,7 +273,6 @@ setInterval(function() {
   });
 
 }, the_interval);
-
 
 
 // view engine setup

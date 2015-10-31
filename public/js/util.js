@@ -156,7 +156,6 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       case "lobby":
         //userInGame(false);
         inLobby(true);
-        // stop interval if... !!!!!!!!!! --------- THIS IS A PROBLEM BECAUSE IT STOPS - FIX ME
         var getActiveUsersInterval = setInterval(function(){ if(userLoggedIn() && !(challengeModalOpen()) ){ getActiveUsers(); } }, 1500 );
         var getChallengesInterval = setInterval(function(){ if(userLoggedIn()){ getChallenges() }else{ clearInterval(getChallengesInterval); } }, 1500 );
         var getChatMsgsInterval = setInterval(function(){ if(userLoggedIn() && inLobby()){ chat.getChatMsgs("1", coreData.chatMsgs) }else{ clearInterval(getChatMsgsInterval); } }, 1000 );

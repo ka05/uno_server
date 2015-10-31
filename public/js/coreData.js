@@ -4,7 +4,7 @@
 define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   var self = coreData = {},
     //uri = "192.168.2.13";
-    uri = "localhost";
+    uri = "localhost",
     // socket io connections
     socket = io(),
     mainSocket = io.connect('http://' + uri + ':3000/login'),
@@ -24,6 +24,7 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
 
     // GAME STUFF
     gameObj = {},
+    gamePlayers = ko.observableArray(),
     gameChatMsgs = ko.observableArray();
 
 
@@ -101,9 +102,20 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
     //this.activePlayer = new GamePlayer(_gameObj.activePlayer);
     this.gamePlayers = ko.observableArray( popPlayersArr(_gameObj.players) );
     this.currPlayer = ko.observable( getCurrPlayer(_gameObj.players) );
-    this.currGC = ko.observable( _gameObj.discardPile[_gameObj.discardPile.length - 1].svgName ); // current discard pile card
+
+    // change this to call getcolor func
+    this.currGC = ko.observable( getSVGName( _gameObj.discardPile[_gameObj.discardPile.length - 1].svgName, _gameObj.discardPile[_gameObj.discardPile.length - 1].color )); // current discard pile card
     this.prevGC = ko.observable( getPrevGC(_gameObj.discardPile) );
     this.currColor = ko.observable( _gameObj.discardPile[_gameObj.discardPile.length - 1].color );
+  };
+
+
+  getSVGName = function(_svgName, _color){
+    if(_svgName == "ww" || _svgName == "wd"){
+      return _svgName + "_" + _color;
+    }else{
+      return _svgName;
+    }
   };
 
   getTimeSent = function(_date){
@@ -251,6 +263,11 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   self.GamePlayer = GamePlayer;
   self.Card = Card;
 
+  // functions
+  self.popPlayersArr = popPlayersArr;
+  self.getCurrPlayer = getCurrPlayer;
+
+  // vars
   self.socket = socket;
   self.mainSocket = mainSocket;
   self.gameSocket = gameSocket;
@@ -260,6 +277,7 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   self.chatMsgs = chatMsgs;
   self.currUser = currUser;
   self.gameObj = gameObj;
+  self.gamePlayers = gamePlayers;
   self.gameChatMsgs = gameChatMsgs;
   self.activeChatData = activeChatData;
 

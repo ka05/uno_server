@@ -45,6 +45,12 @@ html
                         li.chat-icon-li(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
                             a#in-game-chat-btn(class="material-icons", title="chat") chat_bubble_outline
                     ul(class="side-nav collection" id="mobile-nav")
+                        li
+                            div.side-nav-player(data-bind="with:coreData.currUser")
+                                img.circle-img(src="media/users/user.png" height="50", width="50")
+                                h4(data-bind="text:username")
+                                span(data-bind="text:email")
+
                         li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
                             a#nav-profile(href="#") Lobby
                         li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
@@ -53,8 +59,6 @@ html
                             a#nav-login(href="#") Login
                         li(data-bind="visible:util.userLoggedIn, click:util.logout")
                             a#nav-logout(href="#") Logout
-                        li.chat-icon-li(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
-                            a#in-game-chat-btn(class="material-icons", title="chat") chat_bubble_outline
         // Modal Structure
         div#challengeUserModal(class="modal")
             div(class="modal-content")

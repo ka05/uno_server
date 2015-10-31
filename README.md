@@ -29,27 +29,7 @@ Make sure it never crashes
 http://engineering.fluencia.com/blog/2013/12/20/the-4-keys-to-100-uptime-with-nodejs
 
 
-Fix Issues
-- quitting game ( other use cases )
-  - refreshing browser
-  - navigating elsewhere
-  - closing browser
-  - ...
-  
 BUGS:
 - firefox not seeing "io"
 - minor css issues:
   - chat div
-  
-  
-GAME ISSUES
-  - when calling someone out on calling uno
-    - currently ( remove all uno calls )
-    
-  Cases:
-    - user1 has uno - calls uno
-    - next players turn ( if ! player with uno ) -> dont reset all players called uno
-    - if = player with uno -> 
-  
-  
-  

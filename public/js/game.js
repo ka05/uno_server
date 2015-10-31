@@ -6,7 +6,14 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
       canSayUno = ko.observable(false),
       allPlayersPresent = ko.observable(false),
       gameObj = ko.observable(),
-      getGameChatInterval = null;
+      gamePlayers = ko.observableArray(),
+      getGameChatInterval = null,
+      handOffset = ko.observable(0);
+
+
+  function getOffset(){
+    return ( ( $(window).width() - 20 - (gameObj().currPlayer().hand().length * 6.4) )  / ( gameObj().currPlayer().hand().length ) );
+  }
 
   // TEMPORARY INIT
   initGame = function (_gameObj) {
@@ -26,6 +33,23 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
       }
     }, 1000);
 
+    $( window ).unbind( 'beforeunload');
+    $( window ).bind( 'beforeunload' , function( event ) {
+      setTimeout( function() {
+        if(confirm("Are you sure?")){
+          quitGame();
+        }else{
+          $( window ).unbind( 'beforeunload');
+        }
+      } );
+      return 'Leave the game?';
+    } );
+
+    handOffset(getOffset());
+
+    $(window).on('resize', function(){
+      handOffset( getOffset() );
+    });
 
     // set interval to fetch new game objects
     var getGameInterval = setInterval(function () {
@@ -46,6 +70,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
                 // due to materialize toast callback issue
                 setTimeout(function(){
                   util.changeMainView("lobby");
+                  $( window ).unbind( 'beforeunload');
                 }, 3000);
               }
             }
@@ -53,6 +78,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
             // if everyone is still here
             if(allPlayersInGame){
               // if its not turn update stuff so i know whats going on
+
               if( ( !gameObj().currPlayer().isMyTurn() ) ||
                 ( gameObj().currPlayer().hand().length == 0 ) ){
                 updateView(_gameObj);
@@ -66,8 +92,18 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
                   // ideally will want to send them back to lobby
                   setTimeout(function(){
                     util.changeMainView("lobby");
+                    $( window ).unbind( 'beforeunload');
                   }, 3000);
                 }
+              }else{
+                // it is my turn just check for if someone said uno
+                coreData.gamePlayers(coreData.popPlayersArr(_gameObj.players));
+
+                // update my hand if the length differs from before
+                if(gameObj().currPlayer().hand().length != (coreData.getCurrPlayer(_gameObj.players)).hand.length){
+                  updateView(_gameObj);
+                }
+
               }
             }
           },
@@ -80,31 +116,14 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
       }
     }, 1000);
 
-
-    /* OLD WAY OF CLICK EVENTS
-    var handCards = document.getElementById('player-hand').getElementsByTagName('div');
-    for(var i = 0, j = handCards.length; i<j; i++){
-      var cardCont = handCards[i];
-      cardCont.addEventListener("load", function () {
-        console.log("cardCont: " + cardCont);
-        console.log("this: " + this);
-        var card = this.contentDocument.getElementsByTagName("g");
-        var cardName = card.getAttribute("data-card");
-        console.log("cardName: " + cardName);
-        console.log("card[0]: " + card[0]);
-        card[0].addEventListener("click", function (item, event) {
-          alert("clicked a card");
-          validateMove();
-        }, false);
-      }, false);
-
-    }
-    */
   };
 
   updateView = function(_gameObj){
     // update game object in view
     gameObj(new coreData.Game(_gameObj));
+    coreData.gamePlayers(coreData.popPlayersArr(_gameObj.players));
+
+    handOffset( getOffset() );
 
     if(gameObj().currPlayer().hand().length == 1){
       canSayUno(true);
@@ -125,8 +144,6 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
         // send to pre game lobby and have them wait for other players
         util.changeMainView("pre-game-lobby");
         util.preGameLobbyMsg("Waiting for other players, game will start when all players have joined.");
-
-        //coreData.gameSocket.emit('setPlayerInGame', { challengeId:challengeId, userId:coreData.currUser().id }, function(data) { });
 
         // start setInterval for getting challenge object
         var getChallengeInterval = setInterval(
@@ -170,9 +187,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
       }else{
         console.log("error creating game");
       }
-
     });
-
   };
 
   // when user challenged joins
@@ -280,12 +295,30 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
     $wildCardModal.openModal();
 
     $wildCardModal.find('a').each(function () {
+      $(this).unbind('click');
       $(this).on("click", function () {
         // set color
         _callback($(this).attr("data-color"));
         $wildCardModal.closeModal();
       });
     });
+  };
+
+  // pass your turn - choose not to play a card
+  self.pass = function () {
+    coreData.gameSocket.emit('pass',
+      {
+        gameId:gameObj().gameId(),
+        userId:coreData.currUser().id
+      },
+      function (data) {
+        if (data.msg == "success") {
+          updateView(data.data);
+          Materialize.toast("You said Uno", 3000);
+        } else {
+          Materialize.toast(data.msg, 3000);
+        }
+      });
   };
 
   // say uno ( when you have one card left )
@@ -328,7 +361,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
 
 
   // exit game
-  self.quitGame = function () {
+  quitGame = function () {
     coreData.gameSocket.emit('quitGame',
       {
         gameId: gameObj().gameId(),
@@ -337,10 +370,19 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
         if (data.msg == "success") {
           util.changeMainView("lobby"); // send back to lobby
           util.userInGame(false);
+          $( window ).unbind( 'beforeunload');
         } else {
           console.log("error quiting game");
         }
       });
+  };
+
+  self.help = function(){
+
+    // show modal with rules / instructions
+
+
+
   };
 
   // variables
@@ -351,6 +393,8 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
   // functions
   self.validateMove = validateMove;
   self.draw = draw;
+  self.quitGame = quitGame;
+  self.handOffset = handOffset;
 
   return self;
 });

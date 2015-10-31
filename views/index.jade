@@ -46,12 +46,12 @@ block content
                 div(class="row")
                     div(class="input-field col s12")
                         i(class="material-icons prefix") account_circle
-                        input#loginUsername(type='text', name='name', class="validate", value="kaos")
+                        input#loginUsername(type='text', name='name', class="validate", value="nate")
                         label(for="name") Username
                 div(class="row")
                     div(class="input-field col s12")
                         i(class="material-icons prefix") vpn_key
-                        input#loginPass(type='password', name='name', class="validate", value="testing")
+                        input#loginPass(type='password', name='name', class="validate", value="qwerty")
                         label(for="name") Password
                 div#login-error-msg(data-bind="text:util.errorMsg" class="error-txt" style="display:none;")
 
@@ -99,12 +99,12 @@ block content
                                 h6(style="padding:0 2em") Sent Challenges
                             div(style="float:left;width:50%;", class="collection-header challenge-heading")
                                 h6(style="padding:0 2em") Received Challenges
-                            div(style="float:left;width:50%;min-height:41px;")
+                            div(class="challenge-cont bd-right")
                                 div(data-bind="foreach:coreData.sentChallenges")
                                     div(data-bind="attr:{'class':'collection-item challenge-text ' + challengeClass}")
                                         a(data-bind="text:challengeText, attr:{ 'data-index':$index }, click:$parent.lobby.promptCancelChallenge")
                                         i(class="material-icons", style="float:right", title="Start Game", data-bind="click:$parent.game.startGame, visible:startGameVisible, attr:{ 'data-id':id }") play_arrow
-                            div(style="float:left;width:50%;min-height:41px;")
+                            div(class="challenge-cont")
                                 div(data-bind="foreach:coreData.receivedChallenges")
                                     div(data-bind="attr:{'class':'collection-item challenge-text ' + challengeClass}")
                                         a(data-bind="text:challengeText, attr:{ 'data-index':$index }, click:$parent.lobby.promptChallengeResponse")
@@ -126,37 +126,40 @@ block content
         div(id="game-main")
             div#inGameChatWindow
                 div(data-bind="template:{name:'chat-section'}")
-        div(data-bind="with:game.gameObj")
-            div#players(class="row bg-gray")
-                div#player-sect(data-bind="foreach:gamePlayers")
+
+            div#players(class="row")
+                div#player-sect(data-bind="foreach:coreData.gamePlayers()")
                     div(class="player-wrap")
                         img(src="media/users/user.png", data-bind="attr:{ 'alt':username, class:playerClass }", height="70", width="70")
                         div(class="hand-count", data-bind="text:cardCount")
+                        div(class="called-uno", data-bind="visible:calledUno") UNO
                         div(data-bind="text:username, attr:{ class: 'player-username ' + playerClass() }")
                 div.clearfix
+        div(data-bind="with:game.gameObj")
             div#game-view(class="row")
                 div#game-card-view
-                    div#deck-view.card-view
+                    div#deck-view.card-view.hand-card
                         img(data-bind="attr:{ src: 'media/cards/cb.svg'}, click:$root.game.draw", height="90")
-                    div#current-gc-view(data-bind="attr:{class:'card-view active-color-' + currColor() }")
+                    div#current-gc-view
                         img(data-bind="attr:{ src: 'media/cards/' + currGC() + '.svg'}", height="90")
-                    div#previous-gc-view.card-view
+                    div#previous-gc-view.card-view.hover-reveal
                         img(data-bind="attr:{ src: 'media/cards/' + prevGC() + '.svg'}", height="90")
-
                     .clearfix
-            div#action-bar(class="row")
-                button(class="btn btn-main btn-sm", style="width:32%;", data-bind="click:$root.game.sayUno, enable:$root.game.canSayUno") Say Uno!
-                button(class="btn btn-main btn-sm", style="width:32%;margin-left:2%", data-bind="click:$root.game.challengeUno") Challenge Uno
-                button(class="btn btn-main btn-sm", style="width:32%;margin-left:2%", data-bind="click:$root.lobby.confirmQuitGame") Quit Game
 
             div#player-hand(data-bind="attr:{ class: 'row ' + currPlayer().playerClass() }")
                 div(data-bind="attr:{ class:'curr-player-username ' + currPlayer().playerClass() }")
                     h5(data-bind="text:$root.coreData.currUser().username")
+                div#action-bar(class="row")
+                    button(class="btn btn-main btn-sm", style="width:20%;", data-bind="click:$root.game.sayUno, enable:$root.game.canSayUno") Uno!
+                    button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.game.challengeUno") Challenge
+                    button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.lobby.confirmQuitGame") Quit
+                    button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.game.help") Help
+                    button(class="btn btn-main material-icons", style="width:12%;margin:0;margin-left:2%;", data-bind="click:util.toggleInGameChat", title="chat") chat_bubble_outline
+
+                //div(data-bind="foreach:currPlayer().hand, attr:{ style:'margin-left:' + Math.abs( $root.game.handOffset() + 10 ) + 'px' }")
                 div(data-bind="foreach:currPlayer().hand")
-                    div.card-view(data-bind="attr:{ title:cardName }")
+                    div.card-view.hand-card(data-bind="attr:{ title:cardName, style:'width:' + $root.game.handOffset() + 'px' }")
                         img(data-bind="attr:{ src: 'media/cards/' + svgName + '.svg', 'data-id':svgName }, click:$root.game.validateMove", height="90")
-                    //object(data-bind="attr:{ data:'media/cards/' + svgName + '.svg', 'data-card':cardName}", type='image/svg+xml', height='90', width='60')
-                    //    | Your browser doesn't support SVG
 
     script(type="text/html", id="challenger-response-modal")
         div(data-bind="with:lobby.currentSentChallenge")
