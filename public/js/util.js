@@ -188,6 +188,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       if(!_credentials){
         _credentials = null;
       }
+      Materialize.toast("Logging in...", 3000);
       // validate login credentials
       validateLogin(_credentials, {
         success:function(user){
@@ -265,6 +266,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       loginBodyTmpl("signup-body");
       pageHeading("Sign Up");
     }else{
+      Materialize.toast("Signing up...", 3000);
       addUser({
         success:function(){
           util.login(

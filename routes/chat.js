@@ -67,7 +67,7 @@ module.exports = function(db){
       "_id":new ObjectID(_data.senderId)
     }).toArray(function (err, items) {
       // If there was a result
-      if(err === null){
+      if(err === null && items.length > 0){
         // if the user can be in room given roomId
         var senderUsername = items[0].username;
 

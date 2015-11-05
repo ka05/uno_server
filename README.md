@@ -33,3 +33,7 @@ BUGS:
 - firefox not seeing "io"
 - minor css issues:
   - chat div
+  
+Issues:
+- enter keypress on signup ( show loading msg )
+- Looks terrible on mobile

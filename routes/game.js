@@ -899,6 +899,7 @@ module.exports = function(db) {
     }, {'$set': {"players.$.inGame": true}}, function (err, items) {
       //console.log("setplayeringame: res " + JSON.stringify(items) + " err: " + err);
       if (err === null) {
+        updatePlayerInAGame(_data.userId, true);
         _actions.success();
       } else {
         console.log("person not in game");
@@ -1203,7 +1204,7 @@ module.exports = function(db) {
         "players.id": new ObjectID(_data.userId)
       }, {'$set': {"players.$.inGame": false}}, function (err) {
         if (err === null) {
-          console.log('player quit')
+          console.log('player quit');
           //console.log("quitgame: update player: " + JSON.stringify(items[0]));
           // change game status to incomplete - meaning that someone quit
           db.games.update({"_id": new ObjectID(_data.gameId)}, {'$set': {status: "incomplete"}}, function (err, items) {
@@ -1215,6 +1216,8 @@ module.exports = function(db) {
             console.log("err" + err);
             (err === null) ? _actions.success() : _actions.error();
           });
+
+          updatePlayerInAGame(_data.userId, false);
 
         } else {
           _actions.error()
@@ -1303,6 +1306,11 @@ module.exports = function(db) {
 
   };
 
+  updatePlayerInAGame = function(_playerId, _value){
+    db.users.update({_id:new ObjectID(_playerId)}, {'$set':{inAGame:_value}},function(err){
+      console.log("updatePlayerInAGame: err:" + err);
+    });
+  };
 
   /**** END GAME CALLS ****/
 

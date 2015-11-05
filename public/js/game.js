@@ -68,10 +68,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
                 util.userInGame(false);
                 Materialize.toast(_gameObj.players[i].username + " has left the game so the game must end!", 3000);
                 // due to materialize toast callback issue
-                setTimeout(function(){
-                  util.changeMainView("lobby");
-                  $( window ).unbind( 'beforeunload');
-                }, 3000);
+                quitGame();
               }
             }
 

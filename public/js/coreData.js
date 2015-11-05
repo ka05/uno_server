@@ -33,6 +33,7 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
     this.email = _data.email;
     this.username = _data.username;
     this.online = _data.online;
+    this.inAGame = _data.inAGame;
   };
 
   self.ChatMsg = function(_data){

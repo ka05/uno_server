@@ -23,6 +23,7 @@ var CoreData = {};
     this.winCount = _data.winCount;
     this.gamesPlayed = _data.gamesPlayed;
     this.online = _data.online;
+    this.inAGame = _data.inAGame;
     this.token = _data.token;
   };
 

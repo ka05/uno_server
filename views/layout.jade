@@ -64,11 +64,20 @@ html
             div(class="modal-content")
                 div#multiplayer(class="col s12")
                     h5 Select user(s) to challenge
+                    div
+                        div.indicator
+                        span(style="margin-left:10px;") In a Game
                     div(class="collection", data-bind="foreach:coreData.activeUsers")
-                        p(class="collection-item")
-                            input(type="checkbox", name="active-users", data-bind="attr:{ id: id }")
+                        div(class="collection-item active-user-item")
+                            input(type="checkbox", name="active-users", data-bind="attr:{ id: id }, disable:inAGame")
                             label(data-bind="text:username, attr:{ for:id }")
-                // look up knockout if obeervable array empty show msg here
+                            div(data-bind="if: inAGame")
+                                div(class="in-game-indicator")
+                                    div.indicator
+
+                    // ko if: coreData.activeUsers().length == 0
+                    div(class="card-panel" style="margin:.5em;overflow-x:hidden") You are currently the only user online
+                    // /ko
             div(class="modal-footer")
                 a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
                 a(class="waves-effect waves-green btn-flat disabled", id="btn-challenge") Challenge

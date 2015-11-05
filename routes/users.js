@@ -65,6 +65,7 @@ module.exports = function(db) {
         var salt = bcrypt.genSaltSync(10);
         user.password = bcrypt.hashSync(user.password, salt);
         user.online = "false";
+        user.inAGame = false;
         user.winCount = 0;
         //console.log("hash value: " + user.password);
 
