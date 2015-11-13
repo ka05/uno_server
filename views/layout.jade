@@ -61,12 +61,14 @@ html
                             a#mobile-nav-login(href="#") Login
                         li(data-bind="visible:util.userLoggedIn, click:util.logout")
                             a#mobile-nav-logout(href="#") Logout
+                        li(data-bind="click:util.showHelp")
+                            a#mobile-nav-help(href="#") Help
         // Modal Structure
         div#challengeUserModal(class="modal")
             div(class="modal-content")
                 div#multiplayer(class="col s12")
-                    h5 Select user(s) to challenge
-                    div
+                    h4.modal-heading Select user(s) to challenge
+                    div#legend
                         div.indicator
                         span(style="margin-left:10px;") In a Game
                     div(class="collection", data-bind="foreach:coreData.activeUsers")
@@ -86,18 +88,18 @@ html
 
         div#challengeRespModal(class="modal")
             div(class="modal-content")
-                h5(data-bind="text:lobby.challengeModalHeaderMsg")
+                h4.modal-heading(data-bind="text:lobby.challengeModalHeaderMsg")
                 div(data-bind="template:{name:lobby.challengeModalBody}")
             div(class="modal-footer", data-bind="template:lobby.challengeFooterTmpl")
 
         div#confirmModal(class="modal")
             div(class="modal-content")
-                h5(data-bind="text:lobby.confirmModalHeaderMsg")
+                h4.modal-heading(data-bind="text:lobby.confirmModalHeaderMsg")
             div(class="modal-footer", data-bind="template:lobby.confirmFooterTmpl")
 
         div#wildCardModal(class="modal")
             div(class="modal-content")
-                h5 What Color would you like to set?
+                h4.modal-heading What Color would you like to set?
             div(class="modal-footer")
                 a(class="waves-effect waves-red btn-flat disabled", data-color="red") Red
                 a(class="waves-effect waves-blue btn-flat disabled", data-color="blue") Blue
@@ -106,7 +108,7 @@ html
 
         div#helpModal(class="modal")
             div(class="modal-content")
-                h4 Help / Game Instructions
+                h4.modal-heading Help / Game Instructions
                 div(data-bind="foreach:coreData.gameInstructions")
                     h5(data-bind="text:heading")
                     p(data-bind="text:content")

@@ -37,9 +37,7 @@ define('chat', ['jquery', 'knockout', 'coreData' ], function ( $, ko, coreData) 
               // scroll chat down
               $('#chat-cont').scrollTop(document.getElementById("chat-cont").scrollHeight);
             }
-
           }
-
         }
       } else{
         Materialize.toast("error getting chat", 3000); // want to change this to a toast type message later

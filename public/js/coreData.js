@@ -72,18 +72,6 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
             text:"If you play a Draw Two or Wild Draw Four card, your opponent has to draw the number of cards required, and then play immediately resumes back on your turn."
           }
         ]
-      },
-      {
-        heading:"",
-        content:""
-      },
-      {
-        heading:"",
-        content:""
-      },
-      {
-        heading:"",
-        content:""
       }
     ];
 
