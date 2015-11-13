@@ -64,12 +64,11 @@ define('lobby', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, co
           // accepted challenge
           handleChallenge(challengeId, 1);
 
-          // show pre-game-lobby page
-          util.changeMainView("pre-game-lobby");
-          util.preGameLobbyMsg("Please wait for host to start game...");
           // set activeChallengeId
           util.activeChallengeId(challengeId);
 
+          // show pre-game-lobby page
+          util.showPreGameLobby("Please wait for host to start game...");
 
           // start setInterval for getting challenge object
           var getChallengeInterval = setInterval(

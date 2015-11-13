@@ -33,8 +33,6 @@ nav{
     url("http://@{uri}:3000/css/font/MaterialIcons-Regular.woff2") format('woff2'),
     url("http://@{uri}:3000/css/font/MaterialIcons-Regular.woff") format('woff'),
     url("http://@{uri}:3000/css/font/MaterialIcons-Regular.ttf") format('truetype');
-
-  //src: local('Material Icons'), local('MaterialIcons-Regular'), url(http://fonts.gstatic.com/s/materialicons/v7/2fcrYFNaTjcS6g4U3t-Y5ZjZjT5FdEJ140U2DJYC3mY.woff2) format('woff2');
 }
 
 .material-icons {
@@ -62,16 +60,6 @@ nav{
 
   /* Support for IE. */
   font-feature-settings: 'liga';
-}
-
-
-// override navigation
-#nav-mobile{
-  li{
-    &:hover{
-      background:rgba(255,255,255,.3);
-    }
-  }
 }
 
 
@@ -146,6 +134,19 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 
+// override navigation
+#nav-mobile{
+  li{
+    &:hover{
+      background:rgba(255,255,255,.3);
+    }
+  }
+}
+
+.card-cont{
+  float:left;
+  margin:.6em .1em;
+}
 
 /* OVERRIDE FORM ELEMENTS COLORING */
 @inputColor:#fff;
@@ -186,6 +187,8 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
     color: #FFF;
   }
 }
+
+/* for challenge modal */
 
 .active-user-item{
   position: relative;
@@ -234,12 +237,14 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 .card-view{
   float:left;
 }
+
 .hand-card{
   cursor: pointer;
   &:hover img{
     -webkit-filter:drop-shadow(0px 0px 10px black);
   }
 }
+
 .hover-reveal{
   &:hover{
     z-index:999;
@@ -256,6 +261,40 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 #players{
   background: rgba(255, 255, 255, 0.6);
   height:100px;
+
+  .hand-count{
+    background:red;
+    border-radius:3px;
+    color:#fff;
+    position:absolute;
+    top:0;
+    right:-5px;
+    padding:2px 6px;
+  }
+  .called-uno{
+    background:red;
+    border-radius:15px;
+    color:#fff;
+    position:absolute;
+    top:0;
+    left:-5px;
+    padding:2px 6px;
+  }
+
+  .player-username{
+    background:rgba(0,0,0,.8);
+    border-radius:3px;
+    color:#FFF;
+    position:absolute;
+    bottom:0;
+    width:100%;
+    text-align: center;
+    padding:2px 6px;
+
+    &.my-turn{
+      background:limegreen;
+    }
+  }
 }
 
 .player-wrap{
@@ -269,52 +308,14 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
     border-radius: 5em;
     &.my-turn{
       border:1px solid limegreen;
-      .generate-all-browser-animation(my-turn-flashing 1s ease-in-out infinite alternate);
+      .ab-animation(my-turn-flashing 1s ease-in-out infinite alternate);
     }
   }
 }
 
-#action-bar{
-  margin:1em;
 
-  .btn-main{
-    margin:0;
-  }
-}
 
-.hand-count{
-  background:red;
-  border-radius:3px;
-  color:#fff;
-  position:absolute;
-  top:0;
-  right:-5px;
-  padding:2px 6px;
-}
-.called-uno{
-  background:red;
-  border-radius:15px;
-  color:#fff;
-  position:absolute;
-  top:0;
-  left:-5px;
-  padding:2px 6px;
-}
 
-.player-username{
-  background:rgba(0,0,0,.8);
-  border-radius:3px;
-  color:#FFF;
-  position:absolute;
-  bottom:0;
-  width:100%;
-  text-align: center;
-  padding:2px 6px;
-
-  &.my-turn{
-    background:limegreen;
-  }
-}
 
 .curr-player-username{
   background:rgba(0,0,0,.8);
@@ -339,11 +340,19 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   overflow-x: scroll;
 
   &.my-turn{
-    .generate-all-browser-animation(my-turn-flashing 1s ease-in-out infinite alternate);
+    .ab-animation(my-turn-flashing 1s ease-in-out infinite alternate);
   }
 
   .card-view{
     margin:.8em .2em;
+  }
+
+  #action-bar{
+    margin:1em;
+
+    .btn-main{
+      margin:0;
+    }
   }
 }
 
@@ -358,10 +367,7 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   cursor: pointer;
 }
 
-.card-cont{
-  float:left;
-  margin:.6em .1em;
-}
+
 
 /* MAIN PAGE */
 .bg-main{
@@ -386,8 +392,8 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   //-o-background-size: cover;
   //background-size: cover;
   background-size:100%;
-  width:60%;
-  margin:0 auto;
+  width: 40%;
+  margin: 5% auto;
 }
 
 #main-btn-cont{
@@ -604,19 +610,8 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 
 #lobby-main{
   .collection-item{
-    padding-left:.5em;
+    padding-left:.8em;
   }
-
-//  .collection.with-header .collection-item{
-//    padding:0em;
-//    //i{
-//    //  padding:.5em;
-//    //}
-//    a{
-//      padding:.5em;
-//      display: block;
-//    }
-//  }
 }
 
 .challenge-cont{
@@ -650,8 +645,8 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 .ready-item{
   border-left:4px solid #00C853;
-  .generate-all-browser-transition(all 0.5s);
-  .generate-all-browser-animation(flashing .5s ease-in-out infinite alternate);
+  .ab-transition(all 0.5s);
+  .ab-animation(flashing .5s ease-in-out infinite alternate);
 
   &:hover{
     //border-left-width: 8px;
@@ -676,14 +671,14 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   background: @uno_green;
 }
 
-.generate-all-browser-transition(@val){
+.ab-transition(@val){
   -webkit-transition: @val;
   -moz-transition: @val;
   -o-transition: @val;
   transition: @val;
 }
 
-.generate-all-browser-animation(@val){
+.ab-animation(@val){
   -webkit-animation: @val;
   -moz-animation: @val;
   -o-animation: @val;

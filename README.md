@@ -37,3 +37,8 @@ BUGS:
 Issues:
 - enter keypress on signup ( show loading msg )
 - Looks terrible on mobile
+
+Optimization
+- handle runaway event handlers
+- inAGame prop fix ( not reset at proper times )
+- handle navigating away from game ( lobby, profile, etc. )

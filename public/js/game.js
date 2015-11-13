@@ -12,7 +12,10 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
 
 
   function getOffset(){
-    return ( ( $(window).width() - 20 - (gameObj().currPlayer().hand().length * 6.4) )  / ( gameObj().currPlayer().hand().length ) );
+    return (
+      (gameObj() != null) ?
+        ( $(window).width() - 20 - (gameObj().currPlayer().hand().length * 6.4) )  / ( gameObj().currPlayer().hand().length ) : 0
+    );
   }
 
   // TEMPORARY INIT
@@ -97,7 +100,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
                 coreData.gamePlayers(coreData.popPlayersArr(_gameObj.players));
 
                 // update my hand if the length differs from before
-                if(gameObj().currPlayer().hand().length != (coreData.getCurrPlayer(_gameObj.players)).hand.length){
+                if(gameObj().currPlayer().hand().length != (coreData.getCurrGamePlayer(_gameObj.players)).hand.length){
                   updateView(_gameObj);
                 }
 
@@ -139,8 +142,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
       // if game created successfully
       if(createGameRes.msg == "success"){
         // send to pre game lobby and have them wait for other players
-        util.changeMainView("pre-game-lobby");
-        util.preGameLobbyMsg("Waiting for other players, game will start when all players have joined.");
+        util.showPreGameLobby("Waiting for other players, game will start when all players have joined.");
 
         // start setInterval for getting challenge object
         var getChallengeInterval = setInterval(
@@ -300,7 +302,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
       });
     });
   };
-
+/*
   // pass your turn - choose not to play a card
   self.pass = function () {
     coreData.gameSocket.emit('pass',
@@ -317,7 +319,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
         }
       });
   };
-
+*/
   // say uno ( when you have one card left )
   self.sayUno = function () {
     if(gameObj().currPlayer().hand().length <= 2){
@@ -368,19 +370,13 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
           util.changeMainView("lobby"); // send back to lobby
           util.userInGame(false);
           $( window ).unbind( 'beforeunload');
+          gameObj(null); // empty game object
         } else {
           console.log("error quiting game");
         }
       });
   };
 
-  self.help = function(){
-
-    // show modal with rules / instructions
-
-
-
-  };
 
   // variables
   self.gameObj = gameObj;

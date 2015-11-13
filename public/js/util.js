@@ -154,16 +154,18 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         */
         break;
       case "lobby":
+        if(userInGame()){
+          // they are in a game - make them quit
+
+        }
         //userInGame(false);
         inLobby(true);
-        var getActiveUsersInterval = setInterval(function(){ if(userLoggedIn() && !(challengeModalOpen()) ){ getActiveUsers(); } }, 1500 );
-        var getChallengesInterval = setInterval(function(){ if(userLoggedIn()){ getChallenges() }else{ clearInterval(getChallengesInterval); } }, 1500 );
-        var getChatMsgsInterval = setInterval(function(){ if(userLoggedIn() && inLobby()){ chat.getChatMsgs("1", coreData.chatMsgs) }else{ clearInterval(getChatMsgsInterval); } }, 1000 );
+        var getActiveUsersInterval = setInterval(function(){ if( userLoggedIn() && !(challengeModalOpen()) && !(userInGame()) ){ getActiveUsers(); } }, 1500 );
+        var getChallengesInterval = setInterval(function(){ if( userLoggedIn() && !(userInGame()) ){ getChallenges() }else{ clearInterval(getChallengesInterval); } }, 1500 );
+        var getChatMsgsInterval = setInterval(function(){ if( userLoggedIn() && inLobby() ){ chat.getChatMsgs("1", coreData.chatMsgs) }else{ clearInterval(getChatMsgsInterval); } }, 1000 );
 
         break;
       case "game":
-        inLobby(false);
-        //userInGame(true);
         break;
       case "logout":
         logout();
@@ -333,6 +335,15 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     }
   };
 
+  self.showPreGameLobby = function(_msg){
+    util.changeMainView("pre-game-lobby");
+    preGameLobbyMsg(_msg);
+  };
+
+  self.showHelp = function(){
+    // show modal with rules / instructions
+    $('#helpModal').openModal();
+  };
 
 
   // Validation Code
@@ -485,6 +496,28 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       isIe8 = (ver <= 8.0);
     }
     return isIe8;
+  };
+
+  Date.prototype.getMinutesTwoDigits = function()
+  {
+    var retval = this.getMinutes();
+    if (retval < 10) {
+      return ("0" + retval.toString());
+    } else {
+      return retval.toString();
+    }
+  };
+
+  Date.prototype.getHoursNonMilitary = function()
+  {
+    var retval = this.getHours();
+
+    if (retval > 12) {
+      retval -= 12;
+    } else if (retval === 0) {
+      retval = 12;
+    }
+    return retval;
   };
 
   // END browser redirection code

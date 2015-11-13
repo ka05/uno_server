@@ -40,11 +40,16 @@ module.exports = function(db) {
   // gets all users who are online
   self.getOnlineUsers = function (_data, _actions) {
     db.users.find({"online": "true", "_id": {$ne: new ObjectID(_data.uid)}}).toArray(function (err, items) {
-      var userArr = [];
-      for (var i = 0; i < items.length; i++) {
-        userArr.push(new coreData.User(items[i]));
+      if(items.length > 0) {
+        var userArr = [];
+        for (var i = 0; i < items.length; i++) {
+          userArr.push(new coreData.User(items[i]));
+        }
+        _actions.success(userArr);
+      }else{
+        // no users online
+        _actions.error();
       }
-      _actions.success(userArr);
     });
   };
 
@@ -160,7 +165,6 @@ module.exports = function(db) {
   function constructToken(_userId, _socketId) {
     console.log(getIPAddress());
     //var ipAddress = formatIP(getIPAddress());
-    //var userId = getUserID();
     var socketId = _socketId;
     var userId = _userId;
     var timestamp = getTimestamp();
@@ -275,29 +279,22 @@ module.exports = function(db) {
    }
    return addresses[0];
    }
-
+*/
    // formats ip with 0's in front of other numbers in the address ( 192.19.2.23 -> 192019002023
    function formatIP(_ip){
-   var ipArr = _ip.split("."),
-   formattedIpArr = [];
+     var ipArr = _ip.split("."),
+     formattedIpArr = [];
 
-   for(var i = 0; i < ipArr.length; i++){
-   switch(ipArr[i].length){
-   case 3:
-   formattedIpArr[i] = ipArr[i];
-   break;
-   case 2:
-   formattedIpArr[i] = "0" + ipArr[i];
-   break;
-   case 1:
-   formattedIpArr[i] = "00" + ipArr[i];
-   break;
-   }
+     for(var i = 0; i < ipArr.length; i++){
+       while(ipArr[i].length < 3){
+         ipArr[i] = "0" + ipArr[i];
+       }
+       formattedIpArr[i] = ipArr[i];
+     }
+
+     return formattedIpArr.join("");
    }
 
-   return formattedIpArr.join("");
-   }
-   */
 
   self.setUserOffline = setUserOffline;
   self.setUserOnline = setUserOnline;

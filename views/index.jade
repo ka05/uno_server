@@ -46,13 +46,13 @@ block content
                 div(class="row")
                     div(class="input-field col s12")
                         i(class="material-icons prefix") account_circle
-                        input#loginUsername(type='text', name='name', class="validate", value="nate")
-                        label(for="name") Username
+                        input#loginUsername(type='text', name='name', class="validate")
+                        label(for="loginUsername") Username
                 div(class="row")
                     div(class="input-field col s12")
                         i(class="material-icons prefix") vpn_key
-                        input#loginPass(type='password', name='name', class="validate", value="qwerty")
-                        label(for="name") Password
+                        input#loginPass(type='password', name='password', class="validate")
+                        label(for="loginPass") Password
                 div#login-error-msg(data-bind="text:util.errorMsg" class="error-txt" style="display:none;")
 
     script(type="text/html", id="signup-body")
@@ -61,22 +61,22 @@ block content
                 div(class="row form-group")
                     div(class="input-field col s12")
                         input#inputUserEmail(type='email', name='email', class="validate")
-                        label(for="email") Email
+                        label(for="inputUserEmail") Email
                         div(class="error-msg")
                 div(class="row form-group")
                     div(class="input-field col s12")
                         input#inputUsername(type='text', name='username', class="validate")
-                        label(for="username") Username
+                        label(for="inputUsername") Username
                         div(class="error-msg")
                 div(class="row form-group")
                     div(class="input-field col s12")
                         input#inputUserPassword(type='password', name='password', class="validate")
-                        label(for="password") Password
+                        label(for="inputUserPassword") Password
                         div(class="error-msg")
                 div(class="row form-group")
                     div(class="input-field col s12")
                         input#inputUserVerifyPassword(type='password', name='confirm-password', class="validate")
-                        label(for="confirm-password") Confirm Password
+                        label(for="inputUserVerifyPassword") Confirm Password
                         div(class="error-msg")
                 div#signup-error-msg(data-bind="text:util.errorMsg" class="error-txt" style="display:none;")
 
@@ -153,10 +153,9 @@ block content
                     button(class="btn btn-main btn-sm", style="width:20%;", data-bind="click:$root.game.sayUno, enable:$root.game.canSayUno") Uno!
                     button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.game.challengeUno") Challenge
                     button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.lobby.confirmQuitGame") Quit
-                    button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.game.help") Help
+                    button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.util.showHelp") Help
                     button(class="btn btn-main material-icons", style="width:12%;margin:0;margin-left:2%;", data-bind="click:util.toggleInGameChat", title="chat") chat_bubble_outline
 
-                //div(data-bind="foreach:currPlayer().hand, attr:{ style:'margin-left:' + Math.abs( $root.game.handOffset() + 10 ) + 'px' }")
                 div(data-bind="foreach:currPlayer().hand")
                     div.card-view.hand-card(data-bind="attr:{ title:cardName, style:'width:' + $root.game.handOffset() + 'px' }")
                         img(data-bind="attr:{ src: 'media/cards/' + svgName + '.svg', 'data-id':svgName }, click:$root.game.validateMove", height="90")

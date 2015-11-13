@@ -19,7 +19,7 @@ html
         meta(name="msapplication-TileColor", content="#ffffff")
         meta(name="msapplication-TileImage", content="media/icon/ms-icon-144x144.png")
         meta(name="theme-color", content="#ffffff")
-        link(rel='stylesheet', href='css/materialize/bin/materialize.css', media="screen,projection")
+        link(rel='stylesheet', href='css/materialize/bin/materialize.min.css', media="screen,projection")
         link(rel='stylesheet', href='/css/main.css')
         script(src='js/lib/progressbar.min.js')
 
@@ -35,30 +35,32 @@ html
                     ul(id="nav-mobile", class="right hide-on-med-and-down")
 
                         li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
-                            a#nav-profile(href="#") Lobby
-                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
-                            a#nav-profile(href="#") Profile
-                        li(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
-                            a#nav-login(href="#") Login
-                        li(data-bind="visible:util.userLoggedIn, click:util.logout")
-                            a#nav-login(href="#") Logout
-                        li.chat-icon-li(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
-                            a#in-game-chat-btn(class="material-icons", title="chat") chat_bubble_outline
-                    ul(class="side-nav collection" id="mobile-nav")
-                        li
-                            div.side-nav-player(data-bind="with:coreData.currUser")
-                                img.circle-img(src="media/users/user.png" height="50", width="50")
-                                h4(data-bind="text:username")
-                                span(data-bind="text:email")
-
-                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
-                            a#nav-profile(href="#") Lobby
+                            a#nav-lobby(href="#") Lobby
                         li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
                             a#nav-profile(href="#") Profile
                         li(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
                             a#nav-login(href="#") Login
                         li(data-bind="visible:util.userLoggedIn, click:util.logout")
                             a#nav-logout(href="#") Logout
+                        li(data-bind="click:util.showHelp")
+                            a#nav-help(href="#") Help
+                        li.chat-icon-li(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
+                            a#in-game-chat-btn(class="material-icons", title="chat") chat_bubble_outline
+                    ul(class="side-nav collection" id="mobile-nav")
+                        li(data-bind="visible:util.userLoggedIn")
+                            div.side-nav-player(data-bind="with:coreData.currUser")
+                                img.circle-img(src="media/users/user.png" height="50", width="50")
+                                h4(data-bind="text:username")
+                                span(data-bind="text:email")
+
+                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
+                            a#mobile-nav-lobby(href="#") Lobby
+                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
+                            a#mobile-nav-profile(href="#") Profile
+                        li(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
+                            a#mobile-nav-login(href="#") Login
+                        li(data-bind="visible:util.userLoggedIn, click:util.logout")
+                            a#mobile-nav-logout(href="#") Logout
         // Modal Structure
         div#challengeUserModal(class="modal")
             div(class="modal-content")
@@ -101,6 +103,27 @@ html
                 a(class="waves-effect waves-blue btn-flat disabled", data-color="blue") Blue
                 a(class="waves-effect waves-yellow btn-flat disabled", data-color="yellow") Yellow
                 a(class="waves-effect waves-green btn-flat disabled", data-color="green") Green
+
+        div#helpModal(class="modal")
+            div(class="modal-content")
+                h4 Help / Game Instructions
+                div(data-bind="foreach:coreData.gameInstructions")
+                    h5(data-bind="text:heading")
+                    p(data-bind="text:content")
+                    // ko if: $data.note
+                    p(data-bind="text:note")
+                    // /ko
+                    // ko if: $data.image
+                    img(data-bind="attr:{src:image}")
+                    // /ko
+                    // ko if: $data.subContent
+                    ul(data-bind="foreach:subContent")
+                        li(data-bind="text:text")
+                    // /ko
+
+
+            div(class="modal-footer")
+                a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
 
 
         block content

@@ -217,22 +217,9 @@ io.on('connection', function(socket){
   var socketId = socket.id;
   var clientIp = socket.request.connection.remoteAddress;
 
-  socket.on('validate login', function(data){
-
-  });
-
   socket.on('disconnect', function () {
     console.log('user disconnected - ID: ' + socketId);
     users.setUserOffline(socketId);
-
-    /*
-    // if in game
-      // set game to inactive
-      // notify players
-
-    // no matter what - set user.online = false
-
-     */
   });
 });
 
@@ -263,6 +250,8 @@ setInterval(function() {
   });
 
   // delete chat older than 1 hour
+  // Not going to do this anymore
+  /*
   chat.removeOldChat({
     success:function(){
       console.log("Completed games successfully removed");
@@ -271,6 +260,7 @@ setInterval(function() {
       console.log("Error removing completed games")
     }
   });
+  */
 
 }, the_interval);
 

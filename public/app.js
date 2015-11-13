@@ -6,10 +6,10 @@
 requirejs.config({
   baseUrl: 'js',
   paths: {
-    jquery: 'lib/jquery',
+    jquery: 'lib/jquery.min',
     knockout: 'lib/knockout',
     validate: 'lib/validate',
-    materialize: 'lib/materialize',
+    materialize: 'lib/materialize.min',
     socketio: 'lib/socket.io',
     hammerjs: 'lib/hammerjs',
     "jquery-hammerjs": 'lib/jquery.hammer',
