@@ -1,7 +1,7 @@
 doctype html
 html
     head
-        title= title
+        title
         link(rel="apple-touch-icon", sizes="57x57", href="media/icon/apple-icon-57x57.png")
         link(rel="apple-touch-icon", sizes="60x60", href="media/icon/apple-icon-60x60.png")
         link(rel="apple-touch-icon", sizes="72x72", href="media/icon/apple-icon-72x72.png")
@@ -34,98 +34,36 @@ html
                         i(class="material-icons") menu
                     ul(id="nav-mobile", class="right hide-on-med-and-down")
 
-                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
+                        li.nav-item(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
                             a#nav-lobby(href="#") Lobby
-                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
+                        li.nav-item(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
                             a#nav-profile(href="#") Profile
-                        li(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
+                        li.nav-item(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
                             a#nav-login(href="#") Login
-                        li(data-bind="visible:util.userLoggedIn, click:util.logout")
+                        li.nav-item(data-bind="visible:util.userLoggedIn, click:util.logout")
                             a#nav-logout(href="#") Logout
-                        li(data-bind="click:util.showHelp")
+                        li.nav-item(data-bind="click:util.showHelp")
                             a#nav-help(href="#") Help
-                        li.chat-icon-li(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
+                        li.nav-item.chat-icon-li.toggle-chat-btn(data-bind="visible:util.userInGame, click:util.toggleInGameChat")
                             a#in-game-chat-btn(class="material-icons", title="chat") chat_bubble_outline
                     ul(class="side-nav collection" id="mobile-nav")
-                        li(data-bind="visible:util.userLoggedIn")
+                        li.nav-item(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
                             div.side-nav-player(data-bind="with:coreData.currUser")
                                 img.circle-img(src="media/users/user.png" height="50", width="50")
                                 h4(data-bind="text:username")
                                 span(data-bind="text:email")
 
-                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
+                        li.nav-item(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="lobby")
                             a#mobile-nav-lobby(href="#") Lobby
-                        li(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
+                        li.nav-item(data-bind="visible:util.userLoggedIn, click:util.handleNavigation", data-view-name="profile")
                             a#mobile-nav-profile(href="#") Profile
-                        li(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
+                        li.nav-item(data-bind="visible:!(util.userLoggedIn), click:util.handleNavigation", data-view-name="login")
                             a#mobile-nav-login(href="#") Login
-                        li(data-bind="visible:util.userLoggedIn, click:util.logout")
+                        li.nav-item(data-bind="visible:util.userLoggedIn, click:util.logout")
                             a#mobile-nav-logout(href="#") Logout
-                        li(data-bind="click:util.showHelp")
+                        li.nav-item(data-bind="click:util.showHelp")
                             a#mobile-nav-help(href="#") Help
-        // Modal Structure
-        div#challengeUserModal(class="modal")
-            div(class="modal-content")
-                div#multiplayer(class="col s12")
-                    h4.modal-heading Select user(s) to challenge
-                    div#legend
-                        div.indicator
-                        span(style="margin-left:10px;") In a Game
-                    div(class="collection", data-bind="foreach:coreData.activeUsers")
-                        div(class="collection-item active-user-item")
-                            input(type="checkbox", name="active-users", data-bind="attr:{ id: id }, disable:inAGame")
-                            label(data-bind="text:username, attr:{ for:id }")
-                            div(data-bind="if: inAGame")
-                                div(class="in-game-indicator")
-                                    div.indicator
 
-                    // ko if: coreData.activeUsers().length == 0
-                    div(class="card-panel" style="margin:.5em;overflow-x:hidden") You are currently the only user online
-                    // /ko
-            div(class="modal-footer")
-                a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
-                a(class="waves-effect waves-green btn-flat disabled", id="btn-challenge") Challenge
-
-        div#challengeRespModal(class="modal")
-            div(class="modal-content")
-                h4.modal-heading(data-bind="text:lobby.challengeModalHeaderMsg")
-                div(data-bind="template:{name:lobby.challengeModalBody}")
-            div(class="modal-footer", data-bind="template:lobby.challengeFooterTmpl")
-
-        div#confirmModal(class="modal")
-            div(class="modal-content")
-                h4.modal-heading(data-bind="text:lobby.confirmModalHeaderMsg")
-            div(class="modal-footer", data-bind="template:lobby.confirmFooterTmpl")
-
-        div#wildCardModal(class="modal")
-            div(class="modal-content")
-                h4.modal-heading What Color would you like to set?
-            div(class="modal-footer")
-                a(class="waves-effect waves-red btn-flat disabled", data-color="red") Red
-                a(class="waves-effect waves-blue btn-flat disabled", data-color="blue") Blue
-                a(class="waves-effect waves-yellow btn-flat disabled", data-color="yellow") Yellow
-                a(class="waves-effect waves-green btn-flat disabled", data-color="green") Green
-
-        div#helpModal(class="modal")
-            div(class="modal-content")
-                h4.modal-heading Help / Game Instructions
-                div(data-bind="foreach:coreData.gameInstructions")
-                    h5(data-bind="text:heading")
-                    p(data-bind="text:content")
-                    // ko if: $data.note
-                    p(data-bind="text:note")
-                    // /ko
-                    // ko if: $data.image
-                    img(data-bind="attr:{src:image}")
-                    // /ko
-                    // ko if: $data.subContent
-                    ul(data-bind="foreach:subContent")
-                        li(data-bind="text:text")
-                    // /ko
-
-
-            div(class="modal-footer")
-                a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
 
 
         block content

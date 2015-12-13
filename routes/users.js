@@ -40,7 +40,10 @@ module.exports = function(db) {
   // gets all users who are online
   self.getOnlineUsers = function (_data, _actions) {
     db.users.find({"online": "true", "_id": {$ne: new ObjectID(_data.uid)}}).toArray(function (err, items) {
-      if(items.length > 0) {
+      if(err){
+        // error occurred
+        _actions.error();
+      }else if(items.length > 0) {
         var userArr = [];
         for (var i = 0; i < items.length; i++) {
           userArr.push(new coreData.User(items[i]));
@@ -48,8 +51,9 @@ module.exports = function(db) {
         _actions.success(userArr);
       }else{
         // no users online
-        _actions.error();
+        _actions.error("no users online");
       }
+
     });
   };
 

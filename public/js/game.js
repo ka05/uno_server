@@ -6,8 +6,10 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
       canSayUno = ko.observable(false),
       allPlayersPresent = ko.observable(false),
       gameObj = ko.observable(),
+      currGameObj,
       gamePlayers = ko.observableArray(),
       getGameChatInterval = null,
+      getGameInterval = null,
       handOffset = ko.observable(0);
 
 
@@ -32,21 +34,24 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
     // continuously get chat msgs
     getGameChatInterval = setInterval(function () {
       if(util.userInGame()){
+        // check new msgs
         chat.getChatMsgs(gameObj().gameId(), coreData.gameChatMsgs);
       }
     }, 1000);
 
     $( window ).unbind( 'beforeunload');
     $( window ).bind( 'beforeunload' , function( event ) {
-      setTimeout( function() {
-        if(confirm("Are you sure?")){
-          quitGame();
-        }else{
-          $( window ).unbind( 'beforeunload');
-        }
-      } );
-      return 'Leave the game?';
+      quitGame();
     } );
+
+    showHotKeyInfo();
+
+    // disable these when chatting
+
+    //include indicator on chat icon
+
+    $(window).off('keyup'); // ensure im not recreating a new event listener
+
 
     handOffset(getOffset());
 
@@ -55,7 +60,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
     });
 
     // set interval to fetch new game objects
-    var getGameInterval = setInterval(function () {
+    getGameInterval = setInterval(function () {
       if(util.userInGame()){
         getGame(gameObj().gameId(), {
           success:function(_gameObj){
@@ -77,38 +82,37 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
 
             // if everyone is still here
             if(allPlayersInGame){
-              // if its not turn update stuff so i know whats going on
 
-              if( ( !gameObj().currPlayer().isMyTurn() ) ||
-                ( gameObj().currPlayer().hand().length == 0 ) ){
-                updateView(_gameObj);
 
-                // if there is a winner
-                if(_gameObj.winner != ""){
-                  clearInterval(getGameInterval); // clear get game interval
-                  clearInterval(getGameChatInterval); // clear get game chat interval
-                  util.userInGame(false);
-                  Materialize.toast(_gameObj.winner + ' has won this game!', 3000);
-                  // ideally will want to send them back to lobby
-                  setTimeout(function(){
-                    util.changeMainView("lobby");
-                    $( window ).unbind( 'beforeunload');
-                  }, 3000);
-                }
-              }else{
-                // it is my turn just check for if someone said uno
-                coreData.gamePlayers(coreData.popPlayersArr(_gameObj.players));
+              // if something has changed
+              if(JSON.stringify(currGameObj) !== JSON.stringify(_gameObj)){
+                // if its not my turn update stuff so i know whats going on
+                if( ( !gameObj().currPlayer().isMyTurn() ) ||
+                  ( gameObj().currPlayer().hand().length == 0 ) ){
 
-                // update my hand if the length differs from before
-                if(gameObj().currPlayer().hand().length != (coreData.getCurrGamePlayer(_gameObj.players)).hand.length){
                   updateView(_gameObj);
-                }
 
+                  // if there is a winner
+                  checkWinner(_gameObj);
+                }else{
+                  // it is my turn just check for if someone said uno
+                  coreData.gamePlayers(coreData.popPlayersArr(_gameObj.players));
+
+                  // update my hand if the length differs from before
+                  if(gameObj().currPlayer().hand().length != (coreData.getCurrGamePlayer(_gameObj.players)).hand.length){
+                    updateView(_gameObj);
+                  }
+                }
+              }
+              // nothing changed in the new game object
+              else{
+                // check if there is a winner
+                checkWinner(_gameObj);
               }
             }
           },
           error:function(){
-            console.log("error fetching game")
+            console.log("error fetching game");
           }
         });
       }else{
@@ -118,9 +122,23 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
 
   };
 
+  checkWinner = function(_gameObj){
+    if(_gameObj.winner != ""){
+      clearInterval(getGameInterval); // clear get game interval
+      clearInterval(getGameChatInterval); // clear get game chat interval
+      util.userInGame(false);
+      Materialize.toast(_gameObj.winner + ' has won this game!', 3000);
+      // ideally will want to send them back to lobby
+      setTimeout(function(){
+        closeGame();
+      }, 3000);
+    }
+  };
+
   updateView = function(_gameObj){
     // update game object in view
     gameObj(new coreData.Game(_gameObj));
+    currGameObj = _gameObj;
     coreData.gamePlayers(coreData.popPlayersArr(_gameObj.players));
 
     handOffset( getOffset() );
@@ -160,7 +178,7 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
               },
               error:function(){
                 clearInterval(getChallengeInterval);
-                console.log("error retrieving challenge")
+                console.log("error retrieving challenge");
               }
             });
           }, 1000);
@@ -214,7 +232,20 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
     });
   };
 
-
+  self.enableHotKeys = function(){
+    $(window).on('keyup', function (e) {
+      var U_KEY = 85, // U key
+        C_KEY = 67; // C Key
+      if(e.keyCode == U_KEY) {
+        // call uno
+        self.sayUno();
+      }
+      if(e.keyCode == C_KEY){
+        //challenge uno
+        self.challengeUno();
+      }
+    });
+  };
 
   function checkPlayersInGameRoom(_gameId, _actions){
     coreData.gameSocket.emit('checkPlayersInGameRoom', { gameId:_gameId, userId:coreData.currUser().id }, function(data){
@@ -367,15 +398,27 @@ define('game', ['jquery', 'knockout', 'coreData', 'util'], function ( $, ko, cor
         userId: coreData.currUser().id
       }, function (data) {
         if (data.msg == "success") {
-          util.changeMainView("lobby"); // send back to lobby
-          util.userInGame(false);
-          $( window ).unbind( 'beforeunload');
-          gameObj(null); // empty game object
+          closeGame();
         } else {
           console.log("error quiting game");
         }
       });
   };
+
+  closeGame = function(){
+    util.userInGame(false);
+    $(window).unbind( 'beforeunload');
+    $(window).off('keyup');
+    gameObj(null); // empty game object
+    util.changeMainView("lobby"); // send back to lobby
+  };
+
+  function showHotKeyInfo(){
+    // check in local storage
+    if(!localStorage.getItem("showHotKeyInfo") ){
+      Materialize.toast($('<p>Hot Keys: "U" - Call UNO "C" - Challenge</p>').append('<input type="button" value="Dont show again?" class="waves-effect waves-green btn-flat white-text" data-user-pref="game-hotkeys" onclick="_uno.util.saveUserPreference(this)"/>'), 4000);
+    }
+  }
 
 
   // variables

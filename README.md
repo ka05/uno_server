@@ -30,15 +30,19 @@ http://engineering.fluencia.com/blog/2013/12/20/the-4-keys-to-100-uptime-with-no
 
 
 BUGS:
-- firefox not seeing "io"
+- firefox not seeing "io" all the time
 - minor css issues:
   - chat div
   
 Issues:
 - enter keypress on signup ( show loading msg )
-- Looks terrible on mobile
+- Looks terrible on mobile ( too high res )
 
 Optimization
 - handle runaway event handlers
 - inAGame prop fix ( not reset at proper times )
 - handle navigating away from game ( lobby, profile, etc. )
+
+
+Use Forever.js 
+- https://www.npmjs.com/package/forever

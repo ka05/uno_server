@@ -966,6 +966,10 @@ module.exports = function(db) {
               game.winner = game.players[currPlayerIndex].username;
               game.status = "completed";
 
+              for (var i=0, j = game.players.length; i<j; i++) {
+                updatePlayerInAGame(game.players[i].id, false);
+              }
+
               // update player win count in db
               db.users.update({"_id": new ObjectID(playerId)}, {$inc: {winCount: 1}}, function (err) {
                 if (err === null) {
@@ -1309,6 +1313,7 @@ module.exports = function(db) {
   updatePlayerInAGame = function(_playerId, _value){
     db.users.update({_id:new ObjectID(_playerId)}, {'$set':{inAGame:_value}},function(err){
       console.log("updatePlayerInAGame: err:" + err);
+      console.log("updatePlayerInAGame: playerId" + _playerId);
     });
   };
 

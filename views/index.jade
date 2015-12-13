@@ -40,7 +40,7 @@ block content
                             button(class="btn waves-effect waves-light btn-lt", data-bind='click:login', style="width: 49%;") Login
                             button(class="btn waves-effect waves-light btn-lt", data-bind='click:signUp', style="margin-left:2%;width: 49%;") Sign Up
 
-    script(type="text/html", id="login-body")
+    script(type="text/html", id="login-body-tmpl")
         div(class="row")
             div(class="col s12", id="login-body-form")
                 div(class="row")
@@ -55,7 +55,7 @@ block content
                         label(for="loginPass") Password
                 div#login-error-msg(data-bind="text:util.errorMsg" class="error-txt" style="display:none;")
 
-    script(type="text/html", id="signup-body")
+    script(type="text/html", id="signup-body-tmpl")
         div(class="row" id="signup-body")
             div(class="col s12", id="signup-body-form")
                 div(class="row form-group")
@@ -83,9 +83,9 @@ block content
     script(type="text/html", id="main")
         div(id="home-bg")
             div(id="main-btn-cont")
-                button(class="btn btn-main col-100p" data-bind="click:util.handleNavigation", data-view-name="login", data-subview-name="login-body", data-subview-title="Login") Login
+                button(class="btn btn-main col-100p", data-bind="click:util.handleNavigation", data-view-name="login", data-subview-name="login-body-tmpl", data-subview-title="Login") Login
                 br
-                button(class="btn btn-main col-100p" data-bind="click:util.handleNavigation", data-view-name="login", data-subview-name="signup-body", data-subview-title="Sign Up") Sign Up
+                button(class="btn btn-main col-100p", data-bind="click:util.handleNavigation", data-view-name="login", data-subview-name="signup-body-tmpl", data-subview-title="Sign Up") Sign Up
 
 
     script(type="text/html", id="lobby")
@@ -124,7 +124,8 @@ block content
 
     script(type="text/html", id="game")
         div(id="game-main")
-            div#inGameChatWindow
+
+            //div#inGameChatWindow
                 div(data-bind="template:{name:'chat-section'}")
 
             div#players(class="row")
@@ -139,11 +140,11 @@ block content
             div#game-view(class="row")
                 div#game-card-view
                     div#deck-view.card-view.hand-card
-                        img(data-bind="attr:{ src: 'media/cards/cb.svg'}, click:$root.game.draw", height="90")
+                        img(data-bind="attr:{ src: 'media/cards/cb.svg'}, click:$root.game.draw", height="150")
                     div#current-gc-view
-                        img(data-bind="attr:{ src: 'media/cards/' + currGC() + '.svg'}", height="90")
+                        img(data-bind="attr:{ src: 'media/cards/' + currGC() + '.svg'}", height="150")
                     div#previous-gc-view.card-view.hover-reveal
-                        img(data-bind="attr:{ src: 'media/cards/' + prevGC() + '.svg'}", height="90")
+                        img(data-bind="attr:{ src: 'media/cards/' + prevGC() + '.svg'}", height="150")
                     .clearfix
 
             div#player-hand(data-bind="attr:{ class: 'row ' + currPlayer().playerClass() }")
@@ -154,11 +155,11 @@ block content
                     button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.game.challengeUno") Challenge
                     button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.lobby.confirmQuitGame") Quit
                     button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.util.showHelp") Help
-                    button(class="btn btn-main material-icons", style="width:12%;margin:0;margin-left:2%;", data-bind="click:util.toggleInGameChat", title="chat") chat_bubble_outline
+                    button(class="btn btn-main material-icons toggle-chat-btn" style="width:12%;margin:0;margin-left:2%;", data-bind="click:util.toggleInGameChat", title="chat") chat_bubble_outline
 
                 div(data-bind="foreach:currPlayer().hand")
                     div.card-view.hand-card(data-bind="attr:{ title:cardName, style:'width:' + $root.game.handOffset() + 'px' }")
-                        img(data-bind="attr:{ src: 'media/cards/' + svgName + '.svg', 'data-id':svgName }, click:$root.game.validateMove", height="90")
+                        img(data-bind="attr:{ src: 'media/cards/' + svgName + '.svg', 'data-id':svgName }, click:$root.game.validateMove", height="150")
 
     script(type="text/html", id="challenger-response-modal")
         div(data-bind="with:lobby.currentSentChallenge")
@@ -190,10 +191,11 @@ block content
 
             div#chat-controls(class="row")
                 div(class="input-field col pw-90")
-                    input#chat-msg(type="text", data-bind="event:{ keyup:util.sendChatViaEnterKey }")
+                    input#chat-msg(type="text", data-bind="event:{ keyup:chat.sendChatViaEnterKey }")
                     label(for="chat-msg") Chat Message
                 div(class="col chat-btn pw-10")
                     i(id="chat-btn", class="material-icons", data-bind="click:chat.sendChat, attr:{ 'data-roomid':coreData.activeChatData().roomId }") send
+                    // add indicator for new msgs
 
     script(type="text/html", id="bad-browser")
         div(class="row")
@@ -211,3 +213,72 @@ block content
     script(type="text/html", id="confirm-quit-footer-tmpl")
         a(class="modal-action modal-close waves-effect waves-green btn-flat") Cancel
         a(class="waves-effect waves-green btn-flat" id="btn-quit-game" data-bind="click:game.quitGame") Quit Game
+
+
+    // Modal Structure
+    div#challengeUserModal(class="modal")
+        div(class="modal-content")
+            div#multiplayer(class="col s12")
+                h4.modal-heading Select user(s) to challenge
+                div#legend
+                    div.indicator
+                    span(style="margin-left:10px;") In a Game
+                div(class="collection", data-bind="foreach:coreData.activeUsers")
+                    div(class="collection-item active-user-item")
+                        input(type="checkbox", name="active-users", data-bind="attr:{ id: id }, disable:inAGame")
+                        label(data-bind="text:username, attr:{ for:id }")
+                        div(data-bind="if: inAGame")
+                            div(class="in-game-indicator")
+                                div.indicator
+
+                // ko if: coreData.activeUsers().length == 0
+                div(class="card-panel" style="margin:.5em;overflow-x:hidden") You are currently the only user online
+                // /ko
+        div(class="modal-footer")
+            a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
+            a(class="waves-effect waves-green btn-flat disabled", id="btn-challenge") Challenge
+
+    div#challengeRespModal(class="modal")
+        div(class="modal-content")
+            h4.modal-heading(data-bind="text:lobby.challengeModalHeaderMsg")
+            div(data-bind="template:{name:lobby.challengeModalBody}")
+        div(class="modal-footer", data-bind="template:lobby.challengeFooterTmpl")
+
+    div#confirmModal(class="modal")
+        div(class="modal-content")
+            h4.modal-heading(data-bind="text:lobby.confirmModalHeaderMsg")
+        div(class="modal-footer", data-bind="template:lobby.confirmFooterTmpl")
+
+    div#wildCardModal(class="modal")
+        div(class="modal-content")
+            h4.modal-heading What Color would you like to set?
+        div(class="modal-footer")
+            a(class="waves-effect waves-red btn-flat disabled", data-color="red") Red
+            a(class="waves-effect waves-blue btn-flat disabled", data-color="blue") Blue
+            a(class="waves-effect waves-yellow btn-flat disabled", data-color="yellow") Yellow
+            a(class="waves-effect waves-green btn-flat disabled", data-color="green") Green
+
+    div#helpModal(class="modal")
+        div(class="modal-content")
+            h4.modal-heading Help / Game Instructions
+            div(data-bind="foreach:coreData.gameInstructions")
+                h5(data-bind="text:heading")
+                p(data-bind="text:content")
+                // ko if: $data.note
+                p(data-bind="text:note")
+                // /ko
+                // ko if: $data.image
+                img(data-bind="attr:{src:image}")
+                // /ko
+                // ko if: $data.subContent
+                ul(data-bind="foreach:subContent")
+                    li(data-bind="text:text")
+                // /ko
+
+
+        div(class="modal-footer")
+            a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
+
+    div#inGameChatWindow(class="modal bottom-sheet")
+        div(class="modal-content")
+            div(data-bind="template:{name:'chat-section'}")

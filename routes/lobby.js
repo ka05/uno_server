@@ -44,6 +44,7 @@ module.exports = function(db) {
           usersChallenged: results,
           challenger: challenger,
           timestamp: timestamp,
+          expired: false,
           status: "pending"
         };
 
@@ -104,6 +105,7 @@ module.exports = function(db) {
       var challengesArr = [];
       for (var i = 0, j = items.length; i < j; i++) {
         var newStatus = items[i].status;
+
         if (items[i].status != "cancelled" && items[i].status != "declined") {
           if (items[i].challenger.status != "cancelled") {
             if (checkAllUsersResponded(items[i])) {
@@ -129,7 +131,40 @@ module.exports = function(db) {
           }
         }
 
-        //console.log("getSent challenge" + JSON.stringify(items[i]) );
+        if(items[i].status == "pending"){
+          // check if the challenge has existed for more than 10 minutes...
+          var date1 = new Date(items[i].timestamp * 1000),
+              date2 = new Date(),
+              challengeTimestampGood = false;
+
+          if(date1.getYear() == date2.getYear()){
+            if(date1.getMonth() == date2.getMonth()){
+              if(date1.getDate() == date2.getDate()){
+                if(date1.getHours() == date2.getHours()){
+                  if( (date1.getMinutes() + 5) >= date2.getMinutes()){
+                    console.log("within 5 mins");
+                    // still good.
+                    challengeTimestampGood = true;
+                  }
+                }
+              }
+            }
+          }
+
+          // deal with old challenge if its timstamp is not good
+          if(!challengeTimestampGood){
+            // make challenge cancelled
+            items[i].status = "cancelled";
+            // set expired property of challenge
+            items[i].expired = true;
+
+            db.challenges.update({_id: new ObjectID(items[i]._id)}, items[i], function (err) {
+              if (err != null)
+                _actions.error();
+            });
+          }
+        }
+
         challengesArr.push(new coreData.Challenge(items[i]));
       }
       _actions.success(challengesArr);

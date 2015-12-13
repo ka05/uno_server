@@ -75,7 +75,7 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 
 .btn-dk{
   background:rgba(0,0,0,.2);
-  border:2px solid #fff;
+  //border:2px solid #fff;
   margin-bottom:1em;
 
   &:hover{
@@ -225,20 +225,24 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 }
 
 #game-card-view{
-  width:160px;
-  height:4em;
+  //width:160px;
+  width:320px;
+  //height:4em;
+  height:9em;
   position:relative;
   margin:5em auto;
 
   #current-gc-view{
     position:absolute;
-    left: 70px;
+    //left: 70px;
+    left: 150px;
     padding: 0 5px;
     z-index: 99;
   }
   #previous-gc-view{
     position: absolute;
-    left:100px;
+    //left:100px;
+    left:200px;
   }
 
 }
@@ -501,9 +505,22 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
     margin: 0 0 5px 0;
     height:2.2rem;
   }
+
 }
 
+.toggle-chat-btn{
+  &.active{
+    a{
+      .ab-animation(new-msg .5s ease-in-out infinite alternate);
+    }
+    .ab-animation(new-msg .5s ease-in-out infinite alternate);
+  }
+}
 
+.error-sect{
+  background: rgba(255,255,255,.8);
+  margin:1em;
+}
 
 // Background Colors
 .bg-gray{
@@ -598,6 +615,7 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
   }
 }
 
+/*
 #inGameChatWindow{
   position:absolute;
   top:-2000px;
@@ -615,6 +633,20 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
     left:1em;
   }
 
+}
+*/
+#inGameChatWindow{
+  .bottom-sheet{
+    max-height:55%;
+    height:55%;
+  }
+  .modal-content{
+    padding:0;
+
+    .row{
+      margin-bottom:0;
+    }
+  }
 }
 
 #lobby-main{
@@ -665,7 +697,9 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 .pending-item{
   border-left:4px solid #333;
 }
-
+.white-text{
+  color:#fff;
+}
 
 .active-color-red{
   background: @uno_red;
@@ -700,6 +734,9 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
 
 // animation for challenge center to indicate that the game is ready to start
 .generate-keyframes-from-to(flashing, { border-left-color:rgba(0, 200, 83, .5)}, { border-left-color:rgba(0, 180, 90, 1) });
+
+// animation for challenge center to indicate that the game is ready to start
+.generate-keyframes-from-to(new-msg, { color: rgb(255, 92, 52) }, { color: rgb(255, 194, 38) });
 
 .generate-keyframes-from-to(@name, @fromRule, @toRule){
   @-webkit-keyframes @name {

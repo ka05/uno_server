@@ -78,8 +78,8 @@ var loginIO = io
         success:function(res){
           fn({msg:'success', data:res});
         },
-        error:function(){
-          fn({msg:'error'});
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
         }
       });
 
@@ -242,10 +242,10 @@ setInterval(function() {
   // delete incomplete challenges
   lobby.removeBadChallenges({
     success:function(){
-      console.log("Completed games successfully removed");
+      console.log("Bad/Old challenges successfully removed");
     },
     error:function(){
-      console.log("Error removing completed games")
+      console.log("Error removing bad/old challenges")
     }
   });
 
@@ -273,8 +273,8 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+//app.use(bodyParser.json());
+//app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 

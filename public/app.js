@@ -81,6 +81,8 @@ define('uno', ['jquery', 'knockout', 'coreData', 'util', 'chat', 'game', 'lobby'
     });
   };
 
+
+
   // main modules
   self.util = util;
   self.chat = chat;
@@ -109,5 +111,7 @@ define(['uno', 'jquery', 'knockout'], function (uno, $, ko) {
     // browser is modern - continue to load program
     uno.handleFlowLogic();
   }
+
+
 
 });

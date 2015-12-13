@@ -17,7 +17,33 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     inLobby = ko.observable(false),
     userInGame = ko.observable(false),
     preGameLobbyMsg = ko.observable(""),
-    activeChallengeId = ko.observable();
+    activeChallengeId = ko.observable(),
+    newMessageInterval,
+    totalCurrentMsgs = ko.observable(0),
+    totalNewMsgs = ko.observable(0),
+    totalMsgs,
+    totalMsgsBeforeLeaving;
+
+
+  $(window).focus(function() {
+    if(!userInGame()){
+      document.title = "UNO";
+    }
+    clearInterval(newMessageInterval);
+    totalMsgsBeforeLeaving = 0;
+  });
+
+  $(window).blur(function() {
+    totalMsgsBeforeLeaving = totalCurrentMsgs();
+
+    newMessageInterval = setInterval(function(){
+      var totalNewMessages = totalNewMsgs() - totalMsgsBeforeLeaving;
+      if(totalMsgs != totalNewMessages){
+        document.title = "UNO (" + totalNewMessages + ")";
+        totalMsgs = totalNewMessages;
+      }
+    }, 1000);
+  });
 
 
   // GET stuff
@@ -30,6 +56,8 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         $.each(res.data, function () {
           coreData.activeUsers.push(this);
         });
+      }else if(res.msg == "no users online"){
+        coreData.activeUsers.removeAll();
       }
     });
 
@@ -58,6 +86,63 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
 
   };
 
+  getChatMsgs = function(_roomId, _dataArray){
+    coreData.mainSocket.emit("getChat", {roomId:_roomId, userId:coreData.currUser().id}, function(data){
+      var newMessages = false, myMessage = false;
+      if(data.msg == "success"){
+        if(data.length != _dataArray().length){
+
+          coreData.activeChatData({
+            roomId:_roomId,
+            length:_dataArray.length,
+            msgs:_dataArray
+          });
+
+          // if chat container exist in dom
+          if(document.getElementById("chat-cont")){
+            // if array is already populated
+            if(_dataArray().length > 0){
+              totalCurrentMsgs(_dataArray().length); // need to get length of new messages
+              console.log("current: " + totalCurrentMsgs() );
+              totalNewMsgs(data.data.length);
+              // if the last index of each are different timestamps then repop chatmsg observable array
+              if( _dataArray()[_dataArray().length-1].timestamp != data.data[data.data.length-1].timestamp ){
+                _dataArray.removeAll(); // clear it out first
+                $.each(data.data, function(){
+                  _dataArray.push(new coreData.ChatMsg(this));
+                });
+                // scroll chat down
+                $('#chat-cont').scrollTop(document.getElementById("chat-cont").scrollHeight);
+                newMessages = true;
+              }
+              // i just sent it
+              if( data.data[data.data.length-1].username == coreData.currUser().username ){
+                myMessage = true;
+                totalNewMsgs(data.data.length - 1);
+              }
+            }else{
+              _dataArray.removeAll();
+              $.each(data.data, function(){
+                _dataArray.push(new coreData.ChatMsg(this));
+              });
+              // scroll chat down
+              $('#chat-cont').scrollTop(document.getElementById("chat-cont").scrollHeight);
+            }
+          }
+        }
+      } else{
+        Materialize.toast("error getting chat", 3000); // want to change this to a toast type message later
+      }
+      if(newMessages){
+        // if its not visible and the last message was not from me
+        if( (parseInt($('#inGameChatWindow').css('bottom')) != 0) && !myMessage){
+          // set chat-msg div to active class
+          $('.toggle-chat-btn').each(function(){ $(this).addClass("active") });
+        }
+      }
+    })
+  };
+
   self.getChallenge = function(_challengeId, _actions){
 
     // call server and get challenge obj
@@ -72,7 +157,19 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
   };
 
   self.toggleInGameChat = function(){
-    $('#inGameChatWindow').toggleClass("active");
+    var $chatModal = $('#inGameChatWindow');
+    $chatModal.openModal({
+      ready: function() {
+        $(window).off('keyup'); // disable hot keys when chat is active
+        $('.toggle-chat-btn').each(function(){ $(this).removeClass("active") });
+        document.title = "UNO";
+      }, // Callback for Modal open
+      complete: function() {
+        window._uno.game.enableHotKeys();
+      } // Callback for Modal close
+    });
+
+
   };
 
   setActiveTab = function(_ele){
@@ -82,115 +179,121 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     $('#mobile-nav').find('li').each(function(){
       $(this).removeClass("active");
     });
-    _ele.className = "active";
+    $(_ele).addClass("active");
   };
 
   changeMainView = function(_tmplName, _tabEle){
-    // Notes : change this function to be re-usable and called from init of page ( onload )
-    // call that function in onload passing in "login" so app starts with login
-    // figure out how to do routes as different pages.
-
-    // set in lobby to false
-    inLobby(false);
-
-    if(_tabEle){
-      setActiveTab(_tabEle);
+    // check if user is in a game
+    if(userInGame()){
+      // they are in a game - make them quit
+      // show modal saying they cant navigate here - instead they must quit the game first
+      Materialize.toast("You must quit the game first", 3000);
     }
+    // user not in a game
+    else {
+      // set in lobby to false
+      inLobby(false);
 
-    var tmplName = (_tmplName) ? _tmplName : _tabEle.getAttribute("data-view-name"),
-      subTmplName = (_tabEle) ? _tabEle.getAttribute("data-subview-name") : "",
-      subTmplTitle = (_tabEle) ? _tabEle.getAttribute("data-subview-title") : "";
+      if (_tabEle) {
+        setActiveTab(_tabEle);
+      }
 
-    // show main view based on "data-view-name" attribute
-    bodyTmpl(tmplName);
+      var tmplName = (_tmplName) ? _tmplName : _tabEle.getAttribute("data-view-name"),
+        subTmplName = (_tabEle) ? _tabEle.getAttribute("data-subview-name") : "",
+        subTmplTitle = (_tabEle) ? _tabEle.getAttribute("data-subview-title") : "";
 
-    switch(tmplName){
-      case "login":
-      case "signup":
-        loginBodyTmpl(subTmplName);
-        pageHeading(subTmplTitle);
-        $("#loginPass").keyup(function (e) {
-          if (e.keyCode == 13) {
-            // Enter Keypress
-            login();
-          }
-        });
-        $("#inputUserVerifyPassword").keyup(function (e) {
-          if (e.keyCode == 13) {
-            // Enter Keypress
-            signUp();
-          }
-        });
-        break;
-      case "profile":
+      // show main view based on "data-view-name" attribute
+      bodyTmpl(tmplName);
 
-        /*
-        // CIRCLE ANIMATION - WAS GOING TO USE FOR COUNTDOWN FOR PLAYER TURNS
-        $('#img-cont').css("background-image", "url('media/users/user.png')");
-        // do progress bar around user img
-        var startColor = '#6FD57F';
-        var endColor = '#FC5B3F';
-
-        if(!circle){
-          var circle = new ProgressBar.Circle('#img-cont', {
-            color: '#FCB03C',
-            strokeWidth: 3,
-            trailWidth: 0,
-            duration: 30000,
-            text: {
-              value: '0'
-            },
-            step: function(state, circle) {
-              circle.setText((circle.value() * 30).toFixed(0));
-              circle.path.setAttribute('stroke', state.color);
+      switch (tmplName) {
+        case "login":
+        case "signup":
+          loginBodyTmpl(subTmplName);
+          pageHeading(subTmplTitle);
+          $("#loginPass").keyup(function (e) {
+            if (e.keyCode == 13) {
+              // Enter Keypress
+              login();
             }
           });
-        }
+          $("#inputUserVerifyPassword").keyup(function (e) {
+            if (e.keyCode == 13) {
+              // Enter Keypress
+              signUp();
+            }
+          });
+          break;
+        case "profile":
 
-        circle.animate(1, {
-          from: {color: startColor},
-          to: {color: endColor}
-        });
-        */
-        break;
-      case "lobby":
-        if(userInGame()){
-          // they are in a game - make them quit
+          /*
+           // CIRCLE ANIMATION - WAS GOING TO USE FOR COUNTDOWN FOR PLAYER TURNS
+           $('#img-cont').css("background-image", "url('media/users/user.png')");
+           // do progress bar around user img
+           var startColor = '#6FD57F';
+           var endColor = '#FC5B3F';
 
-        }
-        //userInGame(false);
-        inLobby(true);
-        var getActiveUsersInterval = setInterval(function(){ if( userLoggedIn() && !(challengeModalOpen()) && !(userInGame()) ){ getActiveUsers(); } }, 1500 );
-        var getChallengesInterval = setInterval(function(){ if( userLoggedIn() && !(userInGame()) ){ getChallenges() }else{ clearInterval(getChallengesInterval); } }, 1500 );
-        var getChatMsgsInterval = setInterval(function(){ if( userLoggedIn() && inLobby() ){ chat.getChatMsgs("1", coreData.chatMsgs) }else{ clearInterval(getChatMsgsInterval); } }, 1000 );
+           if(!circle){
+           var circle = new ProgressBar.Circle('#img-cont', {
+           color: '#FCB03C',
+           strokeWidth: 3,
+           trailWidth: 0,
+           duration: 30000,
+           text: {
+           value: '0'
+           },
+           step: function(state, circle) {
+           circle.setText((circle.value() * 30).toFixed(0));
+           circle.path.setAttribute('stroke', state.color);
+           }
+           });
+           }
 
-        break;
-      case "game":
-        break;
-      case "logout":
-        logout();
-        break;
+           circle.animate(1, {
+           from: {color: startColor},
+           to: {color: endColor}
+           });
+           */
+          break;
+        case "lobby":
+          inLobby(true);
+          var getActiveUsersInterval = setInterval(function () {
+            if (userLoggedIn() && !(challengeModalOpen()) && !(userInGame())) {
+              getActiveUsers();
+            }
+          }, 1500);
+          var getChallengesInterval = setInterval(function () {
+            if (userLoggedIn() && !(userInGame())) {
+              getChallenges()
+            } else {
+              clearInterval(getChallengesInterval);
+            }
+          }, 1500);
+          var getChatMsgsInterval = setInterval(function () {
+            if (userLoggedIn() && inLobby()) {
+              getChatMsgs("1", coreData.chatMsgs);
+            } else {
+              clearInterval(getChatMsgsInterval);
+            }
+          }, 1000);
+
+          break;
+        case "game":
+          break;
+        case "logout":
+          logout();
+          break;
+      }
     }
-  };
-
-  self.sendChatViaEnterKey = function(item, event){
-    var sendBtnId = event.target.getAttribute("data-btn-id");
-
-    if (event.keyCode == 13) {
-      // Enter Keypress
-      chat.sendChat(sendBtnId);
-    }
-
   };
 
 
   login = function (item, e, _credentials) {
 
-    if( (_credentials) || (loginBodyTmpl() == "login-body") ){
+    if( (_credentials) || (loginBodyTmpl() == "login-body-tmpl") ){
       if(!_credentials){
         _credentials = null;
       }
-      Materialize.toast("Logging in...", 3000);
+      Materialize.toast("Attempting Login...", 3000);
       // validate login credentials
       validateLogin(_credentials, {
         success:function(user){
@@ -210,10 +313,9 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
 
     }else{
       // show different form
-      loginBodyTmpl("login-body");
+      loginBodyTmpl("login-body-tmpl");
       pageHeading("Login");
     }
-
   };
 
   logout = function(){
@@ -233,9 +335,10 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
   };
 
   addUser = function(_actions){
-    var email = $('#signup-body-form').find('input#inputUserEmail').val(),
-      username = $('#signup-body-form').find('input#inputUsername').val(),
-      password = $('#signup-body-form').find('input#inputUserPassword').val();
+    var $form = $('#signup-body-form'),
+      email = $form.find('input#inputUserEmail').val(),
+      username = $form.find('input#inputUsername').val(),
+      password = $form.find('input#inputUserPassword').val();
 
     validateSignUp({
       success: function () {
@@ -247,7 +350,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
           }, function(data){
             if(data.msg == "success"){
               // Clear the form inputs
-              $('#signup-body-form fieldset input').val('');
+              $('#signup-body-form').find('fieldset input').val('');
               _actions.success();
             }else{
               Materialize.toast(data.msg, 3000);
@@ -258,17 +361,16 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         _actions.error();
       }
     });
-
   };
 
 
   signUp = function(){
-    if(loginBodyTmpl() != "signup-body"){
+    if(loginBodyTmpl() != "signup-body-tmpl"){
       // show different form
-      loginBodyTmpl("signup-body");
+      loginBodyTmpl("signup-body-tmpl");
       pageHeading("Sign Up");
     }else{
-      Materialize.toast("Signing up...", 3000);
+      Materialize.toast("Attempting Sign-up...", 3000);
       addUser({
         success:function(){
           util.login(
@@ -282,13 +384,11 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
           // validate login
         },
         error:function(err){
-          console.log("error signing up");
           $('#signup-body-form').find('input').addClass("invalid");
           $('#signup-error-msg').slideDown();
           errorMsg(err);
         }
       });
-
     }
   };
 
@@ -304,12 +404,14 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     }
     else{
       $(".button-collapse").sideNav("hide");
-      if(_ele.nodeName != "LI"){
-        retEle = _ele.parentNode;
-      }else{
+
+      if($(_ele).hasClass("nav-item")){
         retEle = _ele;
+      }else{
+        retEle = _ele.getAncestorWithClass("nav-item");
       }
     }
+
     return retEle;
   };
 
@@ -345,6 +447,16 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     $('#helpModal').openModal();
   };
 
+  self.saveUserPreference = function(_ele){
+    var userPref = $(_ele).attr("data-user-pref");
+
+    switch(userPref){
+      case "game-hotkeys":
+        localStorage.setItem("showHotKeyInfo", "No");
+        break;
+      // would include many other user prefs later
+    }
+  };
 
   // Validation Code
 
@@ -361,9 +473,9 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
   // Shows the errors for a specific input
   function showErrorsForInput(input, errors) {
     // This is the root of the input
-    var formGroup = $(input).parent().parent()
+    var formGroup = $(input).parent().parent(),
     // Find where the error messages will be insert into
-      , messages = formGroup.find(".error-msg");
+        messages = formGroup.find(".error-msg");
     // First we remove any old messages and resets the classes
     resetFormGroup(formGroup);
     // If we have errors
@@ -424,11 +536,10 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       email: {
         // Email is required
         presence: true,
-        // and must be an email (duh)
+        // and must be an email
         email: true
       },
       password: {
-        // Password is also required
         presence: true,
         // And must be at least 5 characters long
         length: {
@@ -436,13 +547,11 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         }
       },
       "confirm-password": {
-        // You need to confirm your password
         presence: true,
         // and it needs to be equal to the other password
         equality: "password"
       },
       username: {
-        // You need to pick a username too
         presence: true,
         // And it must be between 3 and 20 characters long
         length: {
@@ -470,7 +579,6 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     }else{
       _actions.errors();
     }
-
   };
 
   // END Validation Code
@@ -498,6 +606,10 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     return isIe8;
   };
 
+  // END browser redirection code
+
+  // Prototype functions
+
   Date.prototype.getMinutesTwoDigits = function()
   {
     var retval = this.getMinutes();
@@ -520,7 +632,30 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     return retval;
   };
 
-  // END browser redirection code
+  Element.prototype.getAncestorWithClass = function(_className){
+    var ele = this;
+    while ((ele = ele.parentElement) && !ele.classList.contains(_className));
+    return ele;
+  };
+
+  /*
+  Object.extend(Object, {
+    deepEquals: function(o1, o2) {
+      var k1 = Object.keys(o1).sort();
+      var k2 = Object.keys(o2).sort();
+      if (k1.length != k2.length) return false;
+      return k1.zip(k2, function(keyPair) {
+        if(typeof o1[keyPair[0]] == typeof o2[keyPair[1]] == "object"){
+          return deepEquals(o1[keyPair[0]], o2[keyPair[1]])
+        } else {
+          return o1[keyPair[0]] == o2[keyPair[1]];
+        }
+      }).all();
+    }
+  });
+  */
+
+  // END Prototype Functions
 
   // variables bound
   self.bodyTmpl = bodyTmpl;
@@ -533,7 +668,12 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
   self.userInGame = userInGame;
   self.preGameLobbyMsg = preGameLobbyMsg;
   self.activeChallengeId = activeChallengeId;
-
+  // message vars
+  self.newMessageInterval = newMessageInterval;
+  self.totalMsgs = totalMsgs;
+  self.totalMsgsBeforeLeaving = totalMsgsBeforeLeaving;
+  self.totalCurrentMsgs = totalCurrentMsgs;
+  self.totalNewMsgs = totalNewMsgs;
 
   // functions bound
   self.changeMainView = changeMainView;

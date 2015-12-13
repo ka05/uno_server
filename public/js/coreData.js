@@ -4,6 +4,7 @@
 define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   var self = coreData = {},
     //uri = "192.168.2.13";
+    //uri = "ccd.student.rit.edu";
     uri = "localhost",
     // socket io connections
     socket = io(),
@@ -101,8 +102,6 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
     this.usersChallenged = _data.usersChallenged;
     this.challengeText = createChallengeRecText(_data);
     this.challengeClass = getChallengeClass( getRecChallengeStatus(_data) );
-    //this.startGameVisible = checkStartGameVisible(_data.status);
-    //this.openGameVisible = checkJoinGameVisible(_data.status);
   };
 
   self.SentChallenge = function(_data){
@@ -114,8 +113,7 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
     this.usernamesChallenged = getUsernamesChallenged(_data);
     this.challengeText = createChallengeSentText(_data);
     this.challengeClass = getChallengeClass(_data.status);
-    this.startGameVisible = checkStartGameVisible(_data.status);
-    //this.openGameVisible = checkJoinGameVisible(_data.status);
+    this.startGameVisible = (_data.status == "all responded");
   };
 
   Card = function(_data){
@@ -170,6 +168,7 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   };
 
   getTimeSent = function(_date){
+    console.log(_date);
     var date = new Date(_date),
         hours = date.getHoursNonMilitary(),
         mins = date.getMinutesTwoDigits();
@@ -179,8 +178,7 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
 
 
   self.Game.prototype.getPrevGC = function(){
-    var card = this.discardPile[this.discardPile.length - 2];
-    return ( !( (this.discardPile.length - 2) < 0) ) ? card.svgName : "cb";
+    return ( !( (this.discardPile().length - 2) < 0) ) ? this.discardPile()[this.discardPile().length - 2].svgName : "cb";
   };
 
   popPlayersArr = function(_players){
@@ -231,34 +229,15 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
       return "sender-txt";
     }
   };
-  checkStartGameVisible = function(_status){
-    return (_status == "all responded" )
-  };
-  checkJoinGameVisible = function(_status){
-    return (_status == "ready")
-  };
-  getChallengeClass = function(_status){
 
-    switch(_status){
-      case "cancelled":
-        return "cancelled-item";
-        break;
-      case "accepted":
-        return "accepted-item";
-        break;
-      case "all responded":
-        return "ready-item";
-        break;
-      case "declined":
-        return "declined-item";
-        break;
-      case "pending":
-        return "pending-item";
-        break;
-      case "ready":
-        return "ready-item";
-        break;
+  getChallengeClass = function(_status){
+    var className = "";
+    if(_status == "all responded"){
+      className = "ready-item";
+    }else{
+      className = _status + "-item";
     }
+    return className;
   };
   getRecChallengeStatus = function(_challenge){
     var status = null;

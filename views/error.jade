@@ -1,6 +1,11 @@
 extends layout
 
 block content
-  h1= message
-  h2= error.status
-  pre #{error.stack}
+  div.card-panel.error-sect
+    h1= message
+    h2= error.status
+    pre #{error.stack}
+    br
+    div(class="row")
+      div(class="col s12")
+        a(class="btn waves-effect waves-light btn-dk", href="http://localhost:3000") Back to UNO
