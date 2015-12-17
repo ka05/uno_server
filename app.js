@@ -12,7 +12,8 @@ var coreData = require('./custom_modules/coreData/coreData.js');
 
 // Database
 var mongo = require('mongoskin');
-var db = mongo.db("mongodb://localhost:27017/uno", {native_parser:true});
+//var db = mongo.db("mongodb://localhost:27017/uno", {native_parser:true});
+var db = mongo.db("mongodb://cjh3387:$Kink03oz@ds033135.mongolab.com:33135/uno", {native_parser:true});
 
 var routes = require('./routes/index');
 var users = require('./routes/users')(db);
