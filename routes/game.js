@@ -982,7 +982,7 @@ module.exports = function(db) {
 
 
                   // make sure challenges collection exists -> delete challenge
-                  db.listCollections("challenges", function (err, names) {
+                  db.collectionNames("challenges", function (err, names) {
                     if (names.length > 0) {
                       // delete Challenge
                       db.challenges.remove({_id: new ObjectID(game.challengeId)}, function (err, res) {
@@ -1232,7 +1232,7 @@ module.exports = function(db) {
 
   deleteGameById = function (_gameId, _actions) {
     // make sure games collection exists
-    db.listCollections("games", function (err, names) {
+    db.collectionNames("games", function (err, names) {
       if (names.length > 0) {
         // delete game
         db.games.remove({_id: new ObjectID(_gameId)}, function (err, res) {
@@ -1246,7 +1246,7 @@ module.exports = function(db) {
 
   deleteChallengeById = function (_challengeId, _actions) {
     // make sure games collection exists
-    db.listCollections("challenges", function (err, names) {
+    db.collectionNames("challenges", function (err, names) {
       if (names.length > 0) {
         // delete game
         db.challenges.remove({_id: new ObjectID(_challengeId)}, function (err, res) {

@@ -65,7 +65,7 @@ module.exports = function(db) {
   self.getChallenge = function (_data, _actions) {
     // make sure challenges collection exists
     try {
-      db.listCollections("challenges", function (err, names) {
+      db.collectionNames("challenges", function (err, names) {
         if (names.length > 0) {
           db.challenges.find({_id: new ObjectID(_data.challengeId)}).toArray(function (err, items) {
             if (items != "") {
