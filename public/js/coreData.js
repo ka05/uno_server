@@ -5,7 +5,8 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   var self = coreData = {},
     //uri = "192.168.2.13";
     //uri = "ccd.student.rit.edu";
-    uri = "localhost",
+    //uri = "localhost",
+    uri = "wad-uno-main.herokuapp.com",
     // socket io connections
     socket = io(),
     mainSocket = io.connect('http://' + uri + ':3000/login'),
