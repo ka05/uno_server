@@ -9,8 +9,8 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
     uri = "wad-uno-main.herokuapp.com",
     // socket io connections
     socket = io(),
-    mainSocket = io.connect('http://' + uri + '/login'),
-    gameSocket = io.connect('http://' + uri + '/game'),
+    mainSocket = io.connect('https://' + uri + '/login'),
+    gameSocket = io.connect('https://' + uri + '/game'),
 
     // LOBBY STUFF
     activeUsers = ko.observableArray(),
