@@ -22,7 +22,7 @@ var chat = require('./routes/chat')(db);
 
 var app = express();
 
-server = app.listen(3000);
+server = app.listen(process.env.PORT || 3000);
 var io = require('socket.io').listen(server);
 
 var loginIO = io
