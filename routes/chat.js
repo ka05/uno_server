@@ -84,35 +84,37 @@ module.exports = function(db){
           });
 
         }else{
-          // check if they exist as a player in the given gameId
-          db.games.find({ "_id":new ObjectID(_data.roomId) }).toArray(function (err, games) {
-            if(err === null){
-              if (games.length > 0) {
-                if(findPlayerInGame(_data.senderId, games[0].players)){
-                  db.chatMsgs.insert({
-                    "sender":senderUsername,
-                    "message":_data.message,
-                    "roomId":_data.roomId,
-                    "timestamp":new Date()
-                  }, function(err, result){
-                    //console.log("insert chat msg:" + result);
-                    return (err === null) ? _actions.success() : _actions.error();
-                  });
+          if(_data.roomId != "1"){
+            // check if they exist as a player in the given gameId
+            db.games.find({ "_id":new ObjectID(_data.roomId) }).toArray(function (err, games) {
+              if(err === null){
+                if (games.length > 0) {
+                  if(findPlayerInGame(_data.senderId, games[0].players)){
+                    db.chatMsgs.insert({
+                      "sender":senderUsername,
+                      "message":_data.message,
+                      "roomId":_data.roomId,
+                      "timestamp":new Date()
+                    }, function(err, result){
+                      //console.log("insert chat msg:" + result);
+                      return (err === null) ? _actions.success() : _actions.error();
+                    });
+                  }else{
+                    // player isnt part of the game - dont let them have it
+                    console.log("player not found");
+                    _actions.error();
+                  }
                 }else{
-                  // player isnt part of the game - dont let them have it
-                  console.log("player not found");
+                  console.log("no results " + err);
                   _actions.error();
                 }
               }else{
-                console.log("no results " + err);
+                console.log("error in sendchat " + err);
                 _actions.error();
               }
-            }else{
-              console.log("error in sendchat " + err);
-              _actions.error();
-            }
 
-          });
+            });
+          }
         }
       }else{
         _actions.error();
