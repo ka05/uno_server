@@ -25,7 +25,7 @@ var app = express();
 
 server = app.listen(process.env.PORT || 3000);
 var io = require('socket.io').listen(server);
-
+console.log("process.env.PORT: " + process.env.PORT);
 var loginIO = io
   .of('/login')
   .on("connection", function(socket){
