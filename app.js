@@ -217,10 +217,15 @@ var gameIO = io
 io.on('connection', function(socket){
   var socketId = socket.id;
   var clientIp = socket.request.connection.remoteAddress;
+  console.log('user disconnected - ID: ' + socketId);
 
   socket.on('disconnect', function () {
     console.log('user disconnected - ID: ' + socketId);
     users.setUserOffline(socketId);
+  });
+
+  socket.on('validateLogin', function(data, fn){
+    fn("good");
   });
 });
 
