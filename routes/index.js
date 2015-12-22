@@ -9,9 +9,9 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'UNO' });
 });
 
-router.get('/login', function(req, res, next) {
-  res.render('index', { title: 'UNO', page:'login' });
-});
+//router.get('/login', function(req, res, next) {
+//  res.render('index', { title: 'UNO', page:'login' });
+//});
 
 
 module.exports = router;
