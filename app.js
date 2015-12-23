@@ -35,6 +35,7 @@ var loginIO = io
     // loop through and create all these
 
     socket.on('validateLogin', function(data, fn){
+      console.log('validateLogin called in login section');
       data.socketId = socketId;
       users.validateLogin(data, {
         success:function(user){
