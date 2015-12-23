@@ -225,6 +225,7 @@ io.on('connection', function(socket){
   });
 
   socket.on('validateLogin', function(data, fn, ack){
+    console.log("VALIADASDAWDAWd");
     fn({"good":"s"});
     ack("TESTTTTT!!!!!!!!!!!!!!!");
   });
