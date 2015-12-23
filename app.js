@@ -217,7 +217,7 @@ var gameIO = io
 io.on('connection', function(socket){
   var socketId = socket.id;
   var clientIp = socket.request.connection.remoteAddress;
-  console.log('user disconnected - ID: ' + socketId);
+  console.log('user connected - ID: ' + socketId);
 
   socket.on('disconnect', function () {
     console.log('user disconnected - ID: ' + socketId);
@@ -226,7 +226,7 @@ io.on('connection', function(socket){
 
   socket.on('validateLogin', function(data, fn, ack){
     console.log("VALIADASDAWDAWd");
-    fn({"good":"s"});
+    //fn({"good":"s"});
     ack("TESTTTTT!!!!!!!!!!!!!!!");
   });
 });
