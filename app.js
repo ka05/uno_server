@@ -225,7 +225,7 @@ io.on('connection', function(socket){
     users.setUserOffline(socketId);
   });
 
-  socket.on('validateLogin', function(data, fn, ack){
+  socket.on('validateLogin', function(data, ack){
     console.log("VALIADASDAWDAWd");
     //fn({"good":"s"});
     ack("TESTTTTT!!!!!!!!!!!!!!!");
