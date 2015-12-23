@@ -224,8 +224,9 @@ io.on('connection', function(socket){
     users.setUserOffline(socketId);
   });
 
-  socket.on('validateLogin', function(data, fn){
-    fn("good");
+  socket.on('validateLogin', function(data, fn, ack){
+    fn({"good":"s"});
+    ack("TESTTTTT!!!!!!!!!!!!!!!");
   });
 });
 
