@@ -132,18 +132,22 @@ module.exports = function(db) {
       "_id": new ObjectID(token.userId)
     }).toArray(function (err, items) {
       // If there was a result ( userId from token matches one in DB )
-      if (items[0]) {
-        // if the socketId is the same
-        if (items[0].socketId == token.socketId) {
-          var newToken = constructToken(items[0]._id, _data.socketId); // have to update because of socketId
-          setUserOnline(
-            items[0]._id,
-            _data.socketId,
-            newToken
-          ); // need to use socket io conn id);
-          items[0].token = newToken;
-          _actions.success(items[0]);
-        } else {
+      if(items){
+        if (items[0]) {
+          // if the socketId is the same
+          if (items[0].socketId == token.socketId) {
+            var newToken = constructToken(items[0]._id, _data.socketId); // have to update because of socketId
+            setUserOnline(
+              items[0]._id,
+              _data.socketId,
+              newToken
+            ); // need to use socket io conn id);
+            items[0].token = newToken;
+            _actions.success(items[0]);
+          } else {
+            _actions.error();
+          }
+        }else{
           _actions.error();
         }
       } else {

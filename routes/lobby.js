@@ -31,7 +31,7 @@ module.exports = function(db) {
       };
 
       async.mapSeries(usersChallengedIds, function (id, callback) {
-        db.users.find({$query: {'_id': new ObjectID(id)}, $orderby: {timestamp: -1}}).toArray(function (err, res) {
+        db.users.find({$query: {'_id': new ObjectID(id)}}).toArray(function (err, res) {
           if (err) return callback(err);
           callback(null, {
             _id: res[0]._id,

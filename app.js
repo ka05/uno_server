@@ -225,11 +225,176 @@ io.on('connection', function(socket){
     users.setUserOffline(socketId);
   });
 
-  socket.on('validateLogin', function(data, ack){
-    console.log("VALIADASDAWDAWd");
-    //fn({"good":"s"});
-    ack("TESTTTTT!!!!!!!!!!!!!!!");
+  socket.on('validateLogin', function(data, fn){
+    console.log("validate login called");
+    data.socketId = socketId;
+    users.validateLogin(data, {
+      success:function(user){
+        loggedIn = true;
+        fn({valid:true, user:new coreData.User(user)});
+      },
+      error:function(){
+        fn({valid:false});
+      }
+    })
   });
+
+  socket.on('validateToken', function(data, fn){
+    data.socketId = socketId; // needed for setUserOnline(_userId, _socketId)
+    users.validateToken(data, {
+      success:function(user){
+        fn({valid:true, user:new coreData.User(user)});
+      },
+      error:function(){
+        fn({valid:false});
+      }
+    })
+  });
+
+
+  socket.on('addUser', function(data, fn){
+    data.socketId = socketId;
+    users.addUser(data, {
+      success:function(user){
+        loggedIn = true;
+        fn({msg:"success", user:new coreData.User(user)});
+      },
+      error:function(msg){
+        (msg) ? fn({msg:msg}) : fn({msg:"error"});
+      }
+    })
+  });
+
+  socket.on('getOnlineUsers', function(data, fn){
+
+    users.getOnlineUsers(data, {
+      success:function(res){
+        fn({msg:'success', data:res});
+      },
+      error:function(msg){
+        (msg) ? fn({msg:msg}) : fn({msg:"error"});
+      }
+    });
+  });
+
+  socket.on('chatMsg', function (data, fn) {
+    chat.sendChat(data, {
+      success:function(){
+        fn({msg:'success'});
+      },
+      error:function(){
+        fn({msg:'error'});
+      }
+    });
+  });
+
+  socket.on('getChat', function (data, fn) {
+    chat.getChat(data, {
+      success:function(data){
+        fn({msg:'success', data:data});
+      },
+      error:function(){
+        fn({msg:'error'});
+      }
+    });
+  });
+
+
+  socket.on('sendChallenge',function(data, fn){
+
+    lobby.sendChallenge(data, {
+      success:function(res){
+        fn({msg:'success', data:res});
+      },
+      error:function(){
+        fn({msg:'error'});
+      }
+    });
+
+  });
+
+  socket.on('handleChallenge',function(data, fn){
+
+    lobby.handleChallenge(data, {
+      success:function(res){
+        fn({msg:'success', data:res});
+      },
+      error:function(){
+        fn({msg:'error'});
+      }
+    });
+
+  });
+
+  socket.on('getChallenge',function(data, fn){
+
+    lobby.getChallenge(data, {
+      success:function(res){
+        fn({msg:'success', data:res});
+      },
+      error:function(){
+        fn({msg:'error'});
+      }
+    });
+
+  });
+
+  socket.on('getChallenges',function(data, fn){
+
+    lobby.getChallenges(data, {
+      success:function(res){
+        fn({msg:'success', data:res});
+      },
+      error:function(){
+        fn({msg:'error'});
+      }
+    });
+
+  });
+
+  socket.on('getSentChallenges',function(data, fn){
+
+    lobby.getSentChallenges(data, {
+      success:function(res){
+        fn({msg:'success', data:res});
+      },
+      error:function(){
+        fn({msg:'error'});
+      }
+    });
+  });
+
+  var loggedIn = false,
+    emitArr = [
+      'createGame',
+      'getGameByChallengeId',
+      'getGameByGameId',
+      'drawCard',
+      'quitGame',
+      'checkPlayersInGameRoom',
+      'setPlayerInGame',
+      'validateMove',
+      'sayUno',
+      'challengeUno'
+    ];
+
+  function makeSocketOn(funcName) {
+    return function(data, fn) {
+      game[funcName](data, {
+        funcName:funcName,
+        success:function(game){
+          fn({msg:"success", data:game});
+        },
+        error:function(msg){
+          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+        }
+      });
+    }
+  }
+
+  for(var i = 0, j = emitArr.length; i<j; i++){
+    socket.on( emitArr[i], makeSocketOn(emitArr[i]) );
+  }
 });
 
 
