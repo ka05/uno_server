@@ -7,10 +7,11 @@ define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
     //uri = "ccd.student.rit.edu";
     //uri = "localhost",
     uri = "uno-server.herokuapp.com",
+    httpVal = "https",
     // socket io connections
     socket = io(),
-    mainSocket = io.connect('http://' + uri + '/login'),
-    gameSocket = io.connect('http://' + uri + '/game'),
+    mainSocket = io.connect(httpVal + '://' + uri + '/login'),
+    gameSocket = io.connect(httpVal + '://' + uri + '/game'),
 
     // LOBBY STUFF
     activeUsers = ko.observableArray(),
