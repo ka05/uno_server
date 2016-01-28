@@ -105,21 +105,24 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
               totalCurrentMsgs(_dataArray().length); // need to get length of new messages
               console.log("current: " + totalCurrentMsgs() );
               totalNewMsgs(data.data.length);
-              // if the last index of each are different timestamps then repop chatmsg observable array
-              if( _dataArray()[_dataArray().length-1].timestamp != data.data[data.data.length-1].timestamp ){
-                _dataArray.removeAll(); // clear it out first
-                $.each(data.data, function(){
-                  _dataArray.push(new coreData.ChatMsg(this));
-                });
-                // scroll chat down
-                $('#chat-cont').scrollTop(document.getElementById("chat-cont").scrollHeight);
-                newMessages = true;
+              if(data.data[data.data.length-1].timestamp){
+                // if the last index of each are different timestamps then repop chatmsg observable array
+                if( _dataArray()[_dataArray().length-1].timestamp != data.data[data.data.length-1].timestamp ){
+                  _dataArray.removeAll(); // clear it out first
+                  $.each(data.data, function(){
+                    _dataArray.push(new coreData.ChatMsg(this));
+                  });
+                  // scroll chat down
+                  $('#chat-cont').scrollTop(document.getElementById("chat-cont").scrollHeight);
+                  newMessages = true;
+                }
+                // i just sent it
+                if( data.data[data.data.length-1].username == coreData.currUser().username ){
+                  myMessage = true;
+                  totalNewMsgs(data.data.length - 1);
+                }
               }
-              // i just sent it
-              if( data.data[data.data.length-1].username == coreData.currUser().username ){
-                myMessage = true;
-                totalNewMsgs(data.data.length - 1);
-              }
+
             }else{
               _dataArray.removeAll();
               $.each(data.data, function(){
