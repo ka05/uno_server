@@ -2,6 +2,7 @@
  * Created by claytonherendeen on 9/24/15.
  */
 module.exports = function(db){
+  var moment = require('moment');
   var self = this,
       ObjectID = require('mongodb').ObjectID;
   //var db = mongo.db("mongodb://localhost:27017/uno", {native_parser:true});
@@ -70,7 +71,8 @@ module.exports = function(db){
       if(err === null && items.length > 0){
         // if the user can be in room given roomId
         var senderUsername = items[0].username;
-
+        var time = moment().format('MM/DD/YYYY h:mm:ss');
+        console.log(time);
         // they are in lobby chat so they are okay no matter who they are as long as they are loggedIn
         if( (_data.roomId == "1") && (items[0].online == "true") ){
 
@@ -78,7 +80,7 @@ module.exports = function(db){
             "sender":senderUsername,
             "message":_data.message,
             "roomId":_data.roomId,
-            "timestamp":new Date()
+            "timestamp":time
           }, function(err, result){
             return (err === null) ? _actions.success() : _actions.error();
           });
@@ -94,7 +96,7 @@ module.exports = function(db){
                       "sender":senderUsername,
                       "message":_data.message,
                       "roomId":_data.roomId,
-                      "timestamp":new Date()
+                      "timestamp":time
                     }, function(err, result){
                       //console.log("insert chat msg:" + result);
                       return (err === null) ? _actions.success() : _actions.error();

@@ -24,7 +24,7 @@
     "jquery-hammerjs": "^2.0.0",
     "knockout": "^3.3.0",
     "materialize": "^1.0.0",
-    "moment": "^2.10.6",
+    "moment": "^2.11.2",
     "mongodb": "~1.4",
     "mongoskin": "1.4.13",
     "morgan": "~1.5.3",
