@@ -93,15 +93,17 @@ module.exports = function(db) {
    * validate login ( USES TOKEN )
    */
   self.validateLogin = function (_data, _actions) {
-    console.log("validateLogin");
+    console.log("validateLogin" + _data.username + ":" + _data.password);
     db.users.find({
       "username": _data.username
     }).toArray(function (err, items) {
       if (err) {
+        console.log("validateLogin err:" +err);
         // error occurred
         _actions.error();
       } else if (items.length <= 0) {
         // no results
+        console.log("validateLogin no results");
         _actions.error();
       } else if (bcrypt.compareSync(_data.password, items[0].password)) {
         // found result and password matches
@@ -112,6 +114,7 @@ module.exports = function(db) {
         _actions.success(items[0]);
       } else {
         // found result but password doesnt match
+        console.log("validateLogin invalid password");
         _actions.error();
       }
       // will want to inset logged in property for user if they are logged in

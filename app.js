@@ -12,8 +12,13 @@ var coreData = require('./custom_modules/coreData/coreData.js');
 
 // Database
 var mongo = require('mongoskin');
+
+// NOTE:
+// mongo issuse
+// http://stackoverflow.com/questions/28651028/cannot-find-module-build-release-bson-code-module-not-found-js-bson
+
 //var db = mongo.db("mongodb://localhost:27017/uno", {native_parser:true});
-var db = mongo.db("mongodb://cjh3387:$Kink03oz@ds033135.mongolab.com:33135/uno", {native_parser:true});
+var db = mongo.db("mongodb://cjh3387:$Kink03oz@ds033135.mlab.com:33135/uno", {native_parser:true});
 
 var routes = require('./routes/index');
 var users = require('./routes/users')(db);
@@ -35,15 +40,20 @@ var loginIO = io
     // loop through and create all these
 
     socket.on('validateLogin', function(data, fn){
-      console.log('validateLogin called in login section');
+      console.log('validateLogin called in login section' + data);
+      data = (typeof data === "string") ? JSON.parse(data) : data;
       data.socketId = socketId;
       users.validateLogin(data, {
         success:function(user){
           loggedIn = true;
-          fn({valid:true, user:new coreData.User(user)});
+          var response = {valid:true, user:new coreData.User(user)};
+          socket.emit("validateLogin", response);
+          //fn(response);
         },
         error:function(){
-          fn({valid:false});
+          var response = {valid:false};
+          socket.emit("validateLogin", response);
+          //fn(response);
         }
       })
     });
@@ -52,10 +62,14 @@ var loginIO = io
       data.socketId = socketId; // needed for setUserOnline(_userId, _socketId)
       users.validateToken(data, {
         success:function(user){
-          fn({valid:true, user:new coreData.User(user)});
+          var res = {valid:true, user:new coreData.User(user)};
+          //fn(res);
+          socket.emit("validateToken", res);
         },
         error:function(){
-          fn({valid:false});
+          var res = {valid:false};
+          //fn(res);
+          socket.emit("validateToken", res);
         }
       })
     });
@@ -65,10 +79,14 @@ var loginIO = io
       users.addUser(data, {
         success:function(user){
           loggedIn = true;
-          fn({msg:"success", user:new coreData.User(user)});
+          var res = {msg:"success", user:new coreData.User(user)};
+          //fn(res);
+          socket.emit("addUser", res);
         },
         error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+          var res = (msg) ? {msg:msg} : {msg:"error"};
+          //fn(res);
+          socket.emit("addUser", res);
         }
       })
     });
