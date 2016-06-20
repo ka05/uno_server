@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var Strategy = require('passport-local').Strategy;
+var fs = require('fs');
 
 // data objects
 var coreData = require('./custom_modules/coreData/coreData.js');
@@ -17,8 +18,8 @@ var mongo = require('mongoskin');
 // mongo issuse
 // http://stackoverflow.com/questions/28651028/cannot-find-module-build-release-bson-code-module-not-found-js-bson
 
-//var db = mongo.db("mongodb://localhost:27017/uno", {native_parser:true});
-var db = mongo.db("mongodb://cjh3387:$Kink03oz@ds033135.mlab.com:33135/uno", {native_parser:true});
+var db = mongo.db("mongodb://localhost:27017/uno", {native_parser:true});
+//var db = mongo.db("mongodb://cjh3387:$Kink03oz@ds033135.mlab.com:33135/uno", {native_parser:true});
 
 var routes = require('./routes/index');
 var users = require('./routes/users')(db);
@@ -26,16 +27,60 @@ var game = require('./routes/game')(db);
 var lobby = require('./routes/lobby')(db);
 var chat = require('./routes/chat')(db);
 
+// used for image uploads
 var app = express();
+
 
 server = app.listen(process.env.PORT || 3001);
 var io = require('socket.io').listen(server);
 console.log("process.env.PORT: " + process.env.PORT);
+console.log("listening on PORT: 3001");
 var loginIO = io
   .of('/login')
   .on("connection", function(socket){
+    console.log("connected");
+    //socket.emit("connected", "connection successful");
     var loggedIn = false,
         socketId = socket.id;
+
+
+    socket.on('uploadProfileImg', function(data, fn){
+      var imgData = (typeof data === "string") ? JSON.parse(data) : data;
+      var imageBufferData = new Buffer(imgData.image.encodedImage, 'base64'); // Ta-da
+
+      var dirname = __dirname + "/public/media/users/";
+      var newPath = dirname + imgData.image.originalFilename;
+
+      var userProfileImageData = {
+        'userId':imgData.userId,
+        'imagePath':"/media/users/" + imgData.image.originalFilename
+      };
+
+      // finds user and updates image in db
+      users.updateUserProfileImage(userProfileImageData, {
+        success:function(){
+          fs.writeFile(newPath, imageBufferData, 'base64', function (err) {
+            console.log("writeFile: " + err);
+            if(err){
+              var res = {msg:"error"};
+              socket.emit("uploadProfileImg", res);
+              if(fn != null) fn(res);
+            }else {
+              var res = {msg:"success"};
+              socket.emit("uploadProfileImg", res);
+              if(fn != null) fn(res);
+            }
+          });
+        },
+        error:function(){
+          var res = {msg:"error"};
+          socket.emit("uploadProfileImg", res);
+          if(fn != null) fn(res);
+        }
+      });
+    });
+
+    //endregion
 
     // loop through and create all these
 
@@ -46,14 +91,14 @@ var loginIO = io
       users.validateLogin(data, {
         success:function(user){
           loggedIn = true;
-          var response = {valid:true, user:new coreData.User(user)};
-          socket.emit("validateLogin", response);
-          //fn(response);
+          var res = {valid:true, user:new coreData.User(user)};
+          socket.emit("validateLogin", res);
+          if(fn != null) fn(res);
         },
         error:function(){
-          var response = {valid:false};
-          socket.emit("validateLogin", response);
-          //fn(response);
+          var res = {valid:false};
+          socket.emit("validateLogin", res);
+          if(fn != null) fn(res);
         }
       })
     });
@@ -63,13 +108,13 @@ var loginIO = io
       users.validateToken(data, {
         success:function(user){
           var res = {valid:true, user:new coreData.User(user)};
-          //fn(res);
           socket.emit("validateToken", res);
+          if(fn != null) fn(res);
         },
         error:function(){
           var res = {valid:false};
-          //fn(res);
           socket.emit("validateToken", res);
+          if(fn != null) fn(res);
         }
       })
     });
@@ -80,13 +125,13 @@ var loginIO = io
         success:function(user){
           loggedIn = true;
           var res = {msg:"success", user:new coreData.User(user)};
-          //fn(res);
           socket.emit("addUser", res);
+          if(fn != null) fn(res);
         },
         error:function(msg){
           var res = (msg) ? {msg:msg} : {msg:"error"};
-          //fn(res);
           socket.emit("addUser", res);
+          if(fn != null) fn(res);
         }
       })
     });
@@ -96,10 +141,14 @@ var loginIO = io
 
       users.getOnlineUsers(data, {
         success:function(res){
-          fn({msg:'success', data:res});
+          var res = {msg:"success", data:res};
+          socket.emit("getOnlineUsers", res);
+          if(fn != null) fn(res);
         },
         error:function(msg){
-          (msg) ? fn({msg:msg}) : fn({msg:"error"});
+          var res = (msg) ? {msg:msg} : {msg:"error"};
+          socket.emit("getOnlineUsers", res);
+          if(fn != null) fn(res);
         }
       });
 
@@ -108,10 +157,28 @@ var loginIO = io
     socket.on('chatMsg', function (data, fn) {
       chat.sendChat(data, {
         success:function(){
-          fn({msg:'success'});
+          var res = {msg:"success"};
+          socket.emit("chatMsg", res);
+
+          chat.getChat(data, {
+            success:function(resData){
+              var res = {msg:'success', data:resData};
+              socket.emit("getChat", res);
+              socket.broadcast.emit("getChat", res);
+            },
+            error:function(){
+              var res = {msg:'error'};
+              socket.emit("getChat", res);
+              socket.broadcast.emit("getChat", res);
+            }
+          });
+
+          if(fn != null) fn(res);
         },
         error:function(){
-          fn({msg:'error'});
+          var res = {msg:"error"};
+          socket.emit("chatMsg", res);
+          if(fn != null) fn(res);
         }
       });
     });
@@ -119,10 +186,14 @@ var loginIO = io
     socket.on('getChat', function (data, fn) {
       chat.getChat(data, {
         success:function(data){
-          fn({msg:'success', data:data});
+          var res = {msg:'success', data:data};
+          socket.emit("getChat",res);
+          if(fn != null) fn(res);
         },
         error:function(){
-          fn({msg:'error'});
+          var res = {msg:'error'};
+          socket.emit("getChat",res);
+          if(fn != null) fn(res);
         }
       });
     });
@@ -132,23 +203,75 @@ var loginIO = io
 
       lobby.sendChallenge(data, {
         success:function(res){
-          fn({msg:'success', data:res});
+          var res = {msg:'success', data:res};
+          socket.emit("sendChallenge", res);
+          if(fn != null) fn(res);
+          // TODO: for send challenge and handle challenge send back all results via a get challenge emit
+          data = (typeof data === 'string' ) ? JSON.parse(data) : data;
+          var getChallengesData = {
+            "id":data.challengerId
+          };
+
+          //handleBroadcastChallenges(getChallengesData, "r");
+          socket.emit("notifyNeedsToUpdateChallenges", {msg:'true'}); // tell self needs update
+          socket.broadcast.emit("notifyNeedsToUpdateChallenges", {msg:'true'}); // tell other users needs update
         },
         error:function(){
-          fn({msg:'error'});
+          var res = {msg:'error'};
+          socket.emit("sendChallenge", res);
+          if(fn != null) fn(res);
         }
       });
 
     });
 
+    function handleBroadcastChallenges(getChallengesData, type){
+      if(type == "r"){
+        lobby.getChallenges(getChallengesData, {
+          success:function(res){
+            socket.emit("getChallenges", {msg:'success', data:res});
+            socket.broadcast.emit("getChallenges", {msg:'success', data:res});
+          },
+          error:function(){
+            socket.emit("getChallenges", {msg:'error'});
+            socket.broadcast.emit("getChallenges", {msg:'error'});
+          }
+        });
+      }else if(type == "s"){
+        lobby.getSentChallenges(getChallengesData, {
+          success:function(res){
+            socket.emit("getSentChallenges", {msg:'success', data:res});
+            socket.broadcast.emit("getSentChallenges", {msg:'success', data:res});
+          },
+          error:function(){
+            socket.emit("getSentChallenges", {msg:'error'});
+            socket.broadcast.emit("getSentChallenges", {msg:'error'});
+          }
+        });
+      }
+    }
+
     socket.on('handleChallenge',function(data, fn){
 
       lobby.handleChallenge(data, {
-        success:function(res){
-          fn({msg:'success', data:res});
+        success:function(resData){
+          var res = {msg:'success', data:resData};
+          data = (typeof data === 'string' ) ? JSON.parse(data) : data;
+          var getChallengesData = {
+            "id":data.userId
+          };
+          //handleBroadcastChallenges(getChallengesData, "r");
+          // TODO: ideally need to inform the users that they need to update
+          // cant push to them without knowing their userId's
+          socket.broadcast.emit("notifyNeedsToUpdateChallenges", {msg:'true'}); // tell other users needs update
+          socket.emit("notifyNeedsToUpdateChallenges", {msg:'true'}); // tell self needs update
+          socket.emit("handleChallenge", res);
+          if(fn != null) fn(res);
         },
         error:function(){
-          fn({msg:'error'});
+          var res = {msg:'error'};
+          socket.emit("handleChallenge", res);
+          if(fn != null) fn(res);
         }
       });
 
@@ -157,11 +280,15 @@ var loginIO = io
     socket.on('getChallenge',function(data, fn){
 
       lobby.getChallenge(data, {
-        success:function(res){
-          fn({msg:'success', data:res});
+        success:function(resData){
+          var res = {msg:'success', data:resData};
+          socket.emit("getChallenge", res );
+          if(fn != null) fn(res);
         },
         error:function(){
-          fn({msg:'error'});
+          var res = {msg:'error'};
+          socket.emit("getChallenge", res );
+          if(fn != null) fn(res);
         }
       });
 
@@ -170,11 +297,15 @@ var loginIO = io
     socket.on('getChallenges',function(data, fn){
 
       lobby.getChallenges(data, {
-        success:function(res){
-          fn({msg:'success', data:res});
+        success:function(resData){
+          var res = {msg:'success', data:resData};
+          socket.emit("getChallenges", res );
+          if(fn != null) fn(res);
         },
         error:function(){
-          fn({msg:'error'});
+          var res = {msg:'error'};
+          socket.emit("getChallenges", res );
+          if(fn != null) fn(res);
         }
       });
 
@@ -184,11 +315,15 @@ var loginIO = io
     socket.on('getSentChallenges',function(data, fn){
 
       lobby.getSentChallenges(data, {
-        success:function(res){
-          fn({msg:'success', data:res});
+        success:function(resData){
+          var res = {msg:'success', data:resData};
+          socket.emit("getSentChallenges", res);
+          if(fn != null) fn(res);
         },
         error:function(){
-          fn({msg:'error'});
+          var res = {msg:'error'};
+          socket.emit("getSentChallenges", res);
+          if(fn != null) fn(res);
         }
       });
     });
@@ -217,10 +352,19 @@ var gameIO = io
         game[funcName](data, {
           funcName:funcName,
           success:function(game){
-            fn({msg:"success", data:game});
+            var res = {msg:"success", data:game};
+            socket.emit(funcName, res);
+
+            if(funcName == "validateMove" || funcName == "drawCard" || funcName == "sayUno" || funcName == "challengeUno"){
+              socket.broadcast.emit("notifyNeedsToUpdateGame", {msg:'true'});
+            }
+
+            if(fn != null) fn(res);
           },
           error:function(msg){
-            (msg) ? fn({msg:msg}) : fn({msg:"error"});
+            var res = (msg) ? {msg:msg} : {msg:"error"};
+            socket.emit(funcName, res);
+            if(fn != null) fn(res);
           }
         });
       }
@@ -237,6 +381,8 @@ io.on('connection', function(socket){
   var socketId = socket.id;
   var clientIp = socket.request.connection.remoteAddress;
   console.log('user connected - ID: ' + socketId);
+
+  checkNotify(socket); // handles checking for notifications of challenges being deleted
 
   socket.on('disconnect', function () {
     console.log('user disconnected - ID: ' + socketId);
@@ -416,6 +562,19 @@ io.on('connection', function(socket){
 });
 
 
+var needsToNotifyForChallenges = false;
+
+function checkNotify(socket){
+  setInterval(function(){
+
+    if(needsToNotifyForChallenges){
+      socket.broadcast.emit("notifyNeedsToUpdateChallenges", {msg:'true'}); // tell other users needs update
+      needsToNotifyForChallenges = false;
+    }
+
+  }, 10 * 1000); // 10 seconds
+}
+
 // remove old junk every 5 mins
 var minutes = 5, the_interval = minutes * 60 * 1000;
 setInterval(function() {
@@ -435,6 +594,8 @@ setInterval(function() {
   lobby.removeBadChallenges({
     success:function(){
       console.log("Bad/Old challenges successfully removed");
+      // TODO:: figure out how to notify / broadcast from here
+      needsToNotifyForChallenges = true;
     },
     error:function(){
       console.log("Error removing bad/old challenges")
@@ -478,6 +639,10 @@ app.use(function(req,res,next){
 });
 
 app.use('/', routes);
+
+
+//require('./routes/imageUpload.js')(app);
+
 // would include other routes if using routing instead of sockets
 
 // catch 404 and forward to error handler

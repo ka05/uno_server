@@ -3,7 +3,8 @@
  */
 define('coreData', ['jquery', 'knockout', 'socketio'], function ( $, ko, io) {
   var self = coreData = {},
-    uri = "192.168.2.2:3001";
+    //uri = "192.168.2.2:3001";
+    uri = "192.168.1.135:3001";
     //uri = "ccd.student.rit.edu";
     //uri = "localhost:3001",
     //uri = "uno-server.herokuapp.com",

@@ -27,6 +27,14 @@ block content
                             .collection-item
                                 p Games Played:
                                     span(data-bind="text:coreData.currUser().gamesPlayed")
+                            //.collection-item
+                                p
+                                    button#upload_btn Prompt for File
+                                p
+                                    label
+                                        | Choose File:
+                                        input#upload_input(type='file')
+                                #file_drop(dropzone='copy', title='drop files for upload') Drop File
 
 
     script(type="text/html", id="login")

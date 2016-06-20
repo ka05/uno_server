@@ -22,11 +22,19 @@ module.exports = function(db){
    * that they are even part of the game first then let them have the msgs
    */
   getChat = function(_data, _actions){
+
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+    //console.log("roomID: " + _data.roomId);
+
     var fifteenMinsAgo = new Date();
     fifteenMinsAgo.setMinutes(fifteenMinsAgo.getMinutes()-15);
+    var time = moment(fifteenMinsAgo).format('MM/DD/YYYY h:mm:ss');
+
     if(_data.roomId == "1"){
       // they want lobby chat :. they can have it
-      db.chatMsgs.find({ $query:{roomId:_data.roomId, timestamp:{$gte:fifteenMinsAgo}}, $orderby: { _id:1 } }).toArray(function (err, items) {
+      // TODO: fix data coming from android client
+      db.chatMsgs.find({ $query:{roomId:_data.roomId, timestamp:{$gte:time}}, $orderby: { _id:1 } }).toArray(function (err, items) {
+      //db.chatMsgs.find({ $query:{roomId:_data.roomId }}).toArray(function (err, items) {
         (err === null) ? _actions.success(items) : _actions.error();
       });
     }else{
@@ -38,7 +46,7 @@ module.exports = function(db){
             // they are part of the game they can have it
             if(err === null){
               // get chat messages 5 mins old only
-              db.chatMsgs.find({ $query:{roomId:_data.roomId, timestamp:{$gte:fifteenMinsAgo} }, $orderby: { _id:1 } }).toArray(function (err, items) {
+              db.chatMsgs.find({ $query:{roomId:_data.roomId }, $orderby: { _id:1 } }).toArray(function (err, items) {
                 (err === null) ? _actions.success(items) : _actions.error();
               });
             }else{
@@ -64,6 +72,9 @@ module.exports = function(db){
    * that they are even part of the game first
    */
   sendChat = function(_data, _actions){
+
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     db.users.find({
       "_id":new ObjectID(_data.senderId)
     }).toArray(function (err, items) {

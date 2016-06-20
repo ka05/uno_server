@@ -791,7 +791,8 @@ module.exports = function(db) {
 
 // create the game and set things up
   createGame = function (_data, _actions) {
-
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+    console.log("createGame: " + JSON.stringify(_data) );
     // find challenge
     db.challenges.find({"_id": new ObjectID(_data.challengeId)}).toArray(function (err, items) {
       if (items.length > 0) {
@@ -813,7 +814,8 @@ module.exports = function(db) {
               if (err) return callback(err);
               callback(null, {
                 _id: res[0]._id,
-                username: res[0].username
+                username: res[0].username,
+                profileImg: res[0].profileImg
               });
             })
           }, function (err, results) {
@@ -869,6 +871,8 @@ module.exports = function(db) {
 
 // check to see if all players are in game room (ready to play )
   checkPlayersInGameRoom = function (_data, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+    console.log("checkPlayersInGameRoom: "+ JSON.stringify(_data));
     // get gameObj
     db.games.find({"_id": new ObjectID(_data.gameId)}).toArray(function (err, items) {
       if (items.length > 0) {
@@ -892,7 +896,8 @@ module.exports = function(db) {
 
 // sets a player in the game
   setPlayerInGame = function (_data, _actions) {
-    //console.log("setplayeringame: " + _data.userId + " challID: " + _data.challengeId);
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+    console.log("setplayeringame: " + _data.userId + " challID: " + _data.challengeId);
     db.games.update({
       "challengeId": new ObjectID(_data.challengeId),
       "players.id": new ObjectID(_data.userId)
@@ -911,12 +916,17 @@ module.exports = function(db) {
 // get a game by its challengeId ( two games will never have the same challengeId )
   getGameByChallengeId = function (_data, _actions) {
     // make sure user is in the game
-    console.log(_data.challengeId);
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+    console.log("getGameByChallengeId: " + _data.challengeId);
+
     db.games.find({"challengeId": new ObjectID(_data.challengeId)}).toArray(function (err, items) {
       if (items.length > 0) {
+        console.log("getGameByChallengeId: items.length > 0");
         if (findPlayerInGame(_data.userId, items[0].players)) {
+          console.log("getGameByChallengeId: findPlayerInGame true");
           (err === null) ? _actions.success(new coreData.SensitiveGame(items[0], _data.userId)) : _actions.error()
         } else {
+          console.log("getGameByChallengeId: findPlayerInGame false");
           // player isnt part of the game - dont let them have it
           _actions.error();
         }
@@ -929,6 +939,8 @@ module.exports = function(db) {
 
 // get a game by its game id
   getGameByGameId = function (_data, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     getGameById({gameId: _data.gameId, playerId: _data.userId}, _actions, function (game) {
       _actions.success(new coreData.SensitiveGame(game, _data.userId));
     });
@@ -936,6 +948,8 @@ module.exports = function(db) {
 
 // make sure card that player played was a valid card to play
   validateMove = function (_data, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+    console.log("validateMove" + JSON.stringify(_data));
     var playedCardSvgName = _data.svgName, // this will be a card name
       chosenColor = _data.chosenColor, // color from wildcard
       playerId = _data.userId,
@@ -1051,6 +1065,8 @@ module.exports = function(db) {
 
 // draw a card
   drawCard = function (_data, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     var playerId = _data.userId,
       gameId = _data.gameId;
 
@@ -1098,6 +1114,8 @@ module.exports = function(db) {
 
   // when a player wants to call out another player for not saying uno.
   challengeUno = function (_data, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     var gameId = _data.gameId,
       playerId = _data.userId;
 
@@ -1145,6 +1163,8 @@ module.exports = function(db) {
 // when a player is about to play a card leaving one left in their hand
 // they must say uno before placing the card
   sayUno = function (_data, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     var gameId = _data.gameId,
       playerId = _data.userId;
 
@@ -1198,6 +1218,8 @@ module.exports = function(db) {
   };
 
   quitGame = function (_data, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     var gameId = _data.gameId,
       playerId = _data.userId;
     // change status of game - delete game obj
@@ -1231,6 +1253,8 @@ module.exports = function(db) {
   };
 
   deleteGameById = function (_gameId, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     // make sure games collection exists
     db.collectionNames("games", function (err, names) {
       if (names.length > 0) {
@@ -1245,6 +1269,8 @@ module.exports = function(db) {
   };
 
   deleteChallengeById = function (_challengeId, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     // make sure games collection exists
     db.collectionNames("challenges", function (err, names) {
       if (names.length > 0) {
@@ -1262,26 +1288,33 @@ module.exports = function(db) {
 // utility mongo calls
 
   getGameById = function (_data, _actions, _callback) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+
     // get game object
     db.games.find({"_id": new ObjectID(_data.gameId)}).toArray(function (err, items) {
       // if there were no errors
-      if (items.length > 0) {
-        if (err === null) {
-          // make sure they are in the game
-          if (findPlayerInGame(_data.playerId, items[0].players)) {
+      if(items != null){
+        if (items.length > 0) {
+          if (err === null) {
+            // make sure they are in the game
+            if (findPlayerInGame(_data.playerId, items[0].players)) {
 
-            _callback(items[0]); // send game object back
+              _callback(items[0]); // send game object back
 
+            } else {
+              _actions.error()
+            }
           } else {
-            _actions.error()
+            // player isnt part of the game - dont let them have it
+            _actions.error();
           }
-        } else {
-          // player isnt part of the game - dont let them have it
+        }else{
           _actions.error();
         }
       }else{
         _actions.error();
       }
+
     });
   };
 
@@ -1382,6 +1415,7 @@ module.exports = function(db) {
         new coreData.GamePlayerCurrUser({
           id: _players[i]._id,
           username: _players[i].username,
+          profileImg: _players[i].profileImg,
           hand: [],
           cardCount: 0,
           inGame: false,

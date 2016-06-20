@@ -24,6 +24,7 @@ var CoreData = {};
     this.gamesPlayed = _data.gamesPlayed;
     this.online = _data.online;
     this.inAGame = _data.inAGame;
+    this.profileImg = _data.profileImg;
     this.token = _data.token;
   };
 
@@ -31,6 +32,7 @@ var CoreData = {};
   GamePlayer = function(_playerData){
     this.id = _playerData.id;
     this.username = _playerData.username;
+    this.profileImg = _playerData.profileImg;
     this.calledUno = _playerData.calledUno;
     this.cardCount = _playerData.cardCount;
     this.inGame = _playerData.inGame;
@@ -40,6 +42,7 @@ var CoreData = {};
     this.id = _playerData.id;
     this.hand = _playerData.hand;
     this.username = _playerData.username;
+    this.profileImg = _playerData.profileImg;
     this.calledUno = _playerData.calledUno;
     this.inGame = _playerData.inGame;
     this.isMyTurn = _playerData.isMyTurn;

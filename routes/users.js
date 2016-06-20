@@ -57,10 +57,22 @@ module.exports = function(db) {
     });
   };
 
-
+  self.updateUserProfileImage = function(_data, _actions){
+    db.users.update({_id:new ObjectID(_data.userId)}, {'$set':{profileImg:_data.imagePath}}, function (err) {
+      if (err) {
+        // error occurred
+        _actions.error();
+      } else {
+        console.log('updateUserProfileImage : success');
+        _actions.success();
+      }
+    });
+  };
 
   // Sign up
   self.addUser = function (_data, _actions) {
+    _data = (typeof _data === 'string' ) ? JSON.parse(_data) : _data;
+    console.log("data" + _data);
     var user = _data;
     // check if username exists
     db.users.find({
@@ -76,10 +88,12 @@ module.exports = function(db) {
         user.online = "false";
         user.inAGame = false;
         user.winCount = 0;
+        user.profileImg = "media/users/user.png";
         //console.log("hash value: " + user.password);
 
         db.users.insert(user, function (err, result) {
-          (err === null) ? _actions.success(result) : _actions.error();
+          console.log(JSON.stringify(result) + ":" + JSON.stringify(user));
+          (err === null) ? _actions.success(user) : _actions.error();
         });
 
       } else {
@@ -111,6 +125,7 @@ module.exports = function(db) {
         // update user to show online as true
         setUserOnline(items[0]._id, _data.socketId);
         items[0].token = constructToken(items[0]._id, _data.socketId); // need to use socket io conn id
+        console.log(items[0]);
         _actions.success(items[0]);
       } else {
         // found result but password doesnt match
