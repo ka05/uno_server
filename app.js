@@ -38,11 +38,10 @@ console.log("listening on PORT: 3001");
 var loginIO = io
   .of('/login')
   .on("connection", function(socket){
-    console.log("connected");
-    //socket.emit("connected", "connection successful");
     var loggedIn = false,
         socketId = socket.id;
 
+    console.log('user connected - ID: ' + socketId);
 
     socket.on('uploadProfileImg', function(data, fn){
       var imgData = (typeof data === "string") ? JSON.parse(data) : data;
@@ -84,6 +83,18 @@ var loginIO = io
 
     // loop through and create all these
 
+    socket.on('disconnect', function () {
+      console.log('user disconnected - ID: ' + socketId);
+      users.setUserOffline(socketId);
+      socket.broadcast.emit("notifyNeedsToUpdateOnlineUsers", {msg:'true'}); // tell other users needs update
+    });
+
+    socket.on('logout', function () {
+      console.log('user logged out - ID: ' + socketId);
+      users.setUserOffline(socketId);
+      socket.broadcast.emit("notifyNeedsToUpdateOnlineUsers", {msg:'true'}); // tell other users needs update
+    });
+
     socket.on('validateLogin', function(data, fn){
       console.log('validateLogin called in login section' + data);
       data = (typeof data === "string") ? JSON.parse(data) : data;
@@ -93,6 +104,7 @@ var loginIO = io
           loggedIn = true;
           var res = {valid:true, user:new coreData.User(user)};
           socket.emit("validateLogin", res);
+          socket.broadcast.emit("notifyNeedsToUpdateOnlineUsers", {msg:'true'}); // tell other users needs update
           if(fn != null) fn(res);
         },
         error:function(){
@@ -355,7 +367,7 @@ var gameIO = io
             var res = {msg:"success", data:game};
             socket.emit(funcName, res);
 
-            if(funcName == "validateMove" || funcName == "drawCard" || funcName == "sayUno" || funcName == "challengeUno"){
+            if(funcName == "validateMove" || funcName == "drawCard" || funcName == "sayUno" || funcName == "challengeUno" || funcName == "quitGame"){
               socket.broadcast.emit("notifyNeedsToUpdateGame", {msg:'true'});
             }
 
@@ -377,6 +389,7 @@ var gameIO = io
   });
 
 // use namespaces : turn this into a dispatch
+/*
 io.on('connection', function(socket){
   var socketId = socket.id;
   var clientIp = socket.request.connection.remoteAddress;
@@ -560,7 +573,7 @@ io.on('connection', function(socket){
     socket.on( emitArr[i], makeSocketOn(emitArr[i]) );
   }
 });
-
+*/
 
 var needsToNotifyForChallenges = false;
 
