@@ -14,9 +14,9 @@ nav {
   font-family: 'Material Icons';
   font-style: normal;
   font-weight: 400;
-  src: url("https://uno-server.herokuapp.com/css/font/MaterialIcons-Regular.eot");
+  src: url("https://wad-uno-main.herokuapp.com/css/font/MaterialIcons-Regular.eot");
   /* For IE6-8 */
-  src: local('Material Icons'), local('MaterialIcons-Regular'), url("https://uno-server.herokuapp.com/css/font/MaterialIcons-Regular.woff2") format('woff2'), url("https://uno-server.herokuapp.com/css/font/MaterialIcons-Regular.woff") format('woff'), url("https://uno-server.herokuapp.com/css/font/MaterialIcons-Regular.ttf") format('truetype');
+  src: local('Material Icons'), local('MaterialIcons-Regular'), url("https://wad-uno-main.herokuapp.com/css/font/MaterialIcons-Regular.woff2") format('woff2'), url("https://wad-uno-main.herokuapp.com/css/font/MaterialIcons-Regular.woff") format('woff'), url("https://wad-uno-main.herokuapp.com/css/font/MaterialIcons-Regular.ttf") format('truetype');
 }
 .material-icons {
   font-family: 'Material Icons';
