@@ -30,11 +30,11 @@ var chat = require('./routes/chat')(db);
 // used for image uploads
 var app = express();
 
-
-server = app.listen(process.env.PORT || 3001);
+var port = process.env.PORT || 3001;
+var server = app.listen(port);
 var io = require('socket.io').listen(server);
-console.log("process.env.PORT: " + process.env.PORT);
-console.log("listening on PORT: 3001");
+console.log("listening on PORT: "+port);
+
 var loginIO = io
   .of('/login')
   .on("connection", function(socket){
