@@ -19,6 +19,12 @@ var mongo = require('mongoskin');
 // http://stackoverflow.com/questions/28651028/cannot-find-module-build-release-bson-code-module-not-found-js-bson
 
 // var db = mongo.db("mongodb://localhost:27017/uno", {native_parser:true});
+// Console Access:
+// mongo ds033135.mlab.com:33135/uno -u cjh3387 -p $Kink03oz
+
+// NOTE:update all users: set offline:
+// db.users.update({},{ set: {online:false, inAGame:false} }, {multi:true});
+
 var db = mongo.db("mongodb://cjh3387:$Kink03oz@ds033135.mlab.com:33135/uno", {native_parser:true});
 
 var routes = require('./routes/index');
