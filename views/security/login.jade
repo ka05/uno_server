@@ -1,0 +1,57 @@
+script(type="text/html", id="login")
+  div(class="main-wrap")
+    div(class="card login-card")
+      div(class="card-content bg-dk-cover")
+        div(class="card-title card-heading" data-bind="text: util.pageHeading")
+        div(class="row", data-bind="template: { name: util.loginBodyTmpl}")
+        div(class="row")
+          div(class="col s12")
+            button(class="btn waves-effect waves-light btn-lt", data-bind='click: util.login', style="width: 49%;") Login
+            button(class="btn waves-effect waves-light btn-lt", data-bind='click: util.signUp', style="margin-left:2%;width: 49%;") Sign Up
+
+script(type="text/html", id="login-body-tmpl")
+  div(class="row")
+    div(class="col s12", id="login-body-form")
+      div(class="row")
+        div(class="input-field col s12")
+          i(class="material-icons prefix") account_circle
+          input#loginUsername(type='text', name='name', class="validate")
+          label(for="loginUsername") Username
+      div(class="row")
+        div(class="input-field col s12")
+          i(class="material-icons prefix") vpn_key
+          input#loginPass(type='password', name='password', class="validate")
+          label(for="loginPass") Password
+      div#login-error-msg(data-bind="text: util.errorMsg" class="error-txt" style="display:none;")
+
+script(type="text/html", id="signup-body-tmpl")
+  div(class="row" id="signup-body")
+    div(class="col s12", id="signup-body-form")
+      div(class="row form-group")
+        div(class="input-field col s12")
+          input#inputUserEmail(type='email', name='email', class="validate")
+          label(for="inputUserEmail") Email
+          div(class="error-msg")
+      div(class="row form-group")
+        div(class="input-field col s12")
+          input#inputUsername(type='text', name='username', class="validate")
+          label(for="inputUsername") Username
+          div(class="error-msg")
+      div(class="row form-group")
+        div(class="input-field col s12")
+          input#inputUserPassword(type='password', name='password', class="validate")
+          label(for="inputUserPassword") Password
+          div(class="error-msg")
+      div(class="row form-group")
+        div(class="input-field col s12")
+          input#inputUserVerifyPassword(type='password', name='confirm-password', class="validate")
+          label(for="inputUserVerifyPassword") Confirm Password
+          div(class="error-msg")
+      div#signup-error-msg(data-bind="text: util.errorMsg" class="error-txt" style="display:none;")
+
+script(type="text/html", id="main")
+  div(id="home-bg")
+    div(id="main-btn-cont")
+      button(class="btn btn-main col-100p", data-bind="click: util.handleNavigation", data-view-name="login", data-subview-name="login-body-tmpl", data-subview-title="Login") Login
+      br
+      button(class="btn btn-main col-100p", data-bind="click: util.handleNavigation", data-view-name="login", data-subview-name="signup-body-tmpl", data-subview-title="Sign Up") Sign Up

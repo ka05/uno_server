@@ -1,0 +1,22 @@
+script(type="text/html", id="challenger-response-modal")
+  div(data-bind="with:lobby.currentSentChallenge")
+    table
+      thead
+        tr
+          th Username
+          th Status
+      tbody(data-bind="foreach:usersChallenged")
+        tr
+          td(data-bind="text:username")
+          td(data-bind="text:status")
+
+script(type="text/html", id="challenge-resp-footer-tmpl")
+  a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
+  a(class="waves-effect waves-green btn-flat" id="btn-accept-challenge") Accept
+  a(class="waves-effect waves-green btn-flat" id="btn-decline-challenge") Decline
+
+div#challengeRespModal(class="modal")
+  div(class="modal-content")
+    h4.modal-heading(data-bind="text:lobby.challengeModalHeaderMsg")
+    div(data-bind="template:{name:lobby.challengeModalBody}")
+  div(class="modal-footer", data-bind="template:lobby.challengeFooterTmpl")

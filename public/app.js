@@ -37,12 +37,11 @@ requirejs.config({
  */
 
 define('uno', ['jquery', 'knockout', 'coreData', 'util', 'chat', 'game', 'lobby', 'hammerjs', 'velocity', 'validate', 'materialize'], function ( $, ko, coreData, util, chat, game, lobby, hammer, velocity, validate) {
-  var self = uno = {};
+  const self = uno = {};
 
   // necessary to get materialize working with require.js ( stupid! - took way too damn long to figure this out )
   window.Hammer = hammer;
   window.Vel = velocity;
-
 
   /* NOTES
 
@@ -68,20 +67,18 @@ define('uno', ['jquery', 'knockout', 'coreData', 'util', 'chat', 'game', 'lobby'
 
         // then check if in game - passing in gameId ( from LS )
         if(window.localStorage.getItem("gameId")){
-          changeMainView("game");
+          util.changeMainView("game");
           // may not be able to do this - ASK DAN!!!!!!!!!!!!!!!!!!
         }else{
           //they arent in a game so send them to the lobby
-          changeMainView("lobby");
+          util.changeMainView("lobby");
         }
       },
       error: function () {
-        changeMainView("main");
+        util.changeMainView("main");
       }
     });
   };
-
-
 
   // main modules
   self.util = util;
@@ -93,12 +90,10 @@ define('uno', ['jquery', 'knockout', 'coreData', 'util', 'chat', 'game', 'lobby'
   return self;
 });
 
-
 define(['uno', 'jquery', 'knockout'], function (uno, $, ko) {
 
   window._uno = uno; // bind bmx to window object
   ko.applyBindings(uno, document.body); // apply ko bindings
-
 
   // fix sideNav thing later - issue with shimming in materializejs
   $(".button-collapse").sideNav();
@@ -111,7 +106,5 @@ define(['uno', 'jquery', 'knockout'], function (uno, $, ko) {
     // browser is modern - continue to load program
     uno.handleFlowLogic();
   }
-
-
 
 });

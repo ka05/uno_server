@@ -1,0 +1,19 @@
+div#helpModal(class="modal")
+  div(class="modal-content")
+    h4.modal-heading Help / Game Instructions
+    div(data-bind="foreach:coreData.gameInstructions")
+      h5(data-bind="text:heading")
+      p(data-bind="text:content")
+      // ko if: $data.note
+      p(data-bind="text:note")
+      // /ko
+      // ko if: $data.image
+      img(data-bind="attr:{src:image}")
+      // /ko
+      // ko if: $data.subContent
+      ul(data-bind="foreach:subContent")
+        li(data-bind="text:text")
+      // /ko
+
+  div(class="modal-footer")
+    a(class="modal-action modal-close waves-effect waves-green btn-flat") Close

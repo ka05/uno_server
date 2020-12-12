@@ -5,8 +5,6 @@
 define('chat', ['jquery', 'knockout', 'coreData', 'util' ], function ( $, ko, coreData) {
   var self = chat = {};
 
-
-
   self.sendChat = function(){
     var $chatBtn = $('#chat-btn'),
       $msgInput = $('#chat-msg'),

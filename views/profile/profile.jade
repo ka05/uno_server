@@ -1,0 +1,30 @@
+script(type="text/html", id="profile")
+  // SHOW USER INFO
+  div(class="col s6 center" id="user-banner")
+  .row
+    .col.s12
+      .card
+        .card-content
+          .card-title.grey-text.text-darken-4 Profile
+          div(style="margin:0 auto;width:300px;")
+            img(src='media/users/user.png')
+          .collection.with-header
+            .collection-header
+              h4(data-bind="text:coreData.currUser().username")
+            .collection-item
+              p Email:
+                span(data-bind="text:coreData.currUser().email")
+            .collection-item
+              p Win Count:
+                span(data-bind="text:coreData.currUser().winCount")
+            .collection-item
+              p Games Played:
+                span(data-bind="text:coreData.currUser().gamesPlayed")
+            //.collection-item
+                p
+                    button#upload_btn Prompt for File
+                p
+                    label
+                        | Choose File:
+                        input#upload_input(type='file')
+                #file_drop(dropzone='copy', title='drop files for upload') Drop File
