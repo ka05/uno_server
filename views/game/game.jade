@@ -1,0 +1,38 @@
+script(type="text/html", id="game")
+  div(id="game-main")
+
+    //div#inGameChatWindow
+        div(data-bind="template:{name:'chat-section'}")
+
+    div#players(class="row")
+      div#player-sect(data-bind="foreach:coreData.gamePlayers()")
+        div(class="player-wrap")
+          img(src="media/users/user.png", data-bind="attr:{ 'alt':username, class:playerClass }", height="70", width="70")
+          div(class="hand-count", data-bind="text:cardCount")
+          div(class="called-uno", data-bind="visible:calledUno") UNO
+          div(data-bind="text:username, attr:{ class: 'player-username ' + playerClass() }")
+      div.clearfix
+  div(data-bind="with:game.gameObj")
+    div#game-view(class="row")
+      div#game-card-view
+        div#deck-view.card-view.hand-card
+          img(data-bind="attr:{ src: 'media/cards/cb.svg'}, click:$root.game.draw", height="150")
+        div#current-gc-view
+          img(data-bind="attr:{ src: 'media/cards/' + currGC() + '.svg'}", height="150")
+        div#previous-gc-view.card-view.hover-reveal
+          img(data-bind="attr:{ src: 'media/cards/' + prevGC() + '.svg'}", height="150")
+        .clearfix
+
+    div#player-hand(data-bind="attr:{ class: 'row ' + currPlayer().playerClass() }")
+      div(data-bind="attr:{ class:'curr-player-username ' + currPlayer().playerClass() }")
+        h5(data-bind="text:$root.coreData.currUser().username")
+      div#action-bar(class="row")
+        button(class="btn btn-main btn-sm", style="width:20%;", data-bind="click:$root.game.sayUno, enable:$root.game.canSayUno") Uno!
+        button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.game.challengeUno") Challenge
+        button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.lobby.confirmQuitGame") Quit
+        button(class="btn btn-main btn-sm", style="width:20%;margin-left:2%", data-bind="click:$root.util.showHelp") Help
+        button(class="btn btn-main material-icons toggle-chat-btn" style="width:12%;margin:0;margin-left:2%;", data-bind="click:util.toggleInGameChat", title="chat") chat_bubble_outline
+
+      div(data-bind="foreach:currPlayer().hand")
+        div.card-view.hand-card(data-bind="attr:{ title:cardName, style:'width:' + $root.game.handOffset() + 'px' }")
+          img(data-bind="attr:{ src: 'media/cards/' + svgName + '.svg', 'data-id':svgName }, click:$root.game.validateMove", height="150")

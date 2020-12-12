@@ -1,0 +1,11 @@
+// Modal Footer Template
+// TODO: Update these to be dynamically built buttons
+script(type="text/html", id="challenge-cancel-footer-tmpl")
+  a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
+  a(class="waves-effect waves-green btn-flat" id="btn-cancel-challenge") Cancel Challenge
+script(type="text/html", id="confirm-quit-footer-tmpl")
+  a(class="modal-action modal-close waves-effect waves-green btn-flat") Cancel
+  a(class="waves-effect waves-green btn-flat" id="btn-quit-game" data-bind="click:game.quitGame") Quit Game
+script(type="text/html", id="challenge-join-game-footer-tmpl")
+  a(class="modal-action modal-close waves-effect waves-green btn-flat") Close
+  a(class="waves-effect waves-green btn-flat" id="btn-join-game") Join Game

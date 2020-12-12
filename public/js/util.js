@@ -2,8 +2,8 @@
  * Created by claytonherendeen on 10/12/15.
  */
 
-define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, coreData) {
-  var self = util = {},
+define('util', ['jquery', 'knockout', 'coreData', 'chat'], function ($, ko, coreData) {
+  let self = util = {},
 
     // main body tmpl
     bodyTmpl = ko.observable("blank-tmpl"),
@@ -24,48 +24,44 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     totalMsgs,
     totalMsgsBeforeLeaving;
 
-
-  $(window).focus(function() {
-    if(!userInGame()){
+  $(window).focus(function () {
+    if (!userInGame()) {
       document.title = "UNO";
     }
     clearInterval(newMessageInterval);
     totalMsgsBeforeLeaving = 0;
   });
 
-  $(window).blur(function() {
+  $(window).blur(function () {
     totalMsgsBeforeLeaving = totalCurrentMsgs();
 
-    newMessageInterval = setInterval(function(){
-      var totalNewMessages = totalNewMsgs() - totalMsgsBeforeLeaving;
-      if(totalMsgs != totalNewMessages){
-        document.title = "UNO (" + totalNewMessages + ")";
+    newMessageInterval = setInterval(function () {
+      const totalNewMessages = totalNewMsgs() - totalMsgsBeforeLeaving;
+      if (totalNewMessages > 0 && totalMsgs !== totalNewMessages) {
+        document.title = `UNO (${totalNewMessages})`;
         totalMsgs = totalNewMessages;
       }
     }, 1000);
   });
 
-
   // GET stuff
 
-  getActiveUsers = function(){
-
-    coreData.mainSocket.emit('getOnlineUsers', { uid:coreData.currUser().id }, function(res){
-      if(res.msg == 'success'){
+  const getActiveUsers = function () {
+    coreData.mainSocket.emit('getOnlineUsers', {uid: coreData.currUser().id}, function (res) {
+      if (res.msg == 'success') {
         coreData.activeUsers.removeAll();
         $.each(res.data, function () {
           coreData.activeUsers.push(this);
         });
-      }else if(res.msg == "no users online"){
+      } else if (res.msg == "no users online") {
         coreData.activeUsers.removeAll();
       }
     });
-
   };
-  getChallenges = function(){
 
-    coreData.mainSocket.emit('getChallenges', { id:coreData.currUser().id }, function(res){
-      if(res.msg == 'success'){
+  const getChallenges = function () {
+    coreData.mainSocket.emit('getChallenges', {id: coreData.currUser().id}, function (res) {
+      if (res.msg == 'success') {
         //console.log("rec challenges: " +JSON.stringify(res.data));
         coreData.receivedChallenges.removeAll();
         $.each(res.data, function () {
@@ -74,8 +70,8 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       }
     });
 
-    coreData.mainSocket.emit('getSentChallenges', { id:coreData.currUser().id }, function(res){
-      if(res.msg == 'success'){
+    coreData.mainSocket.emit('getSentChallenges', {id: coreData.currUser().id}, function (res) {
+      if (res.msg == 'success') {
         //console.log("sent challenges: " +res.data);
         coreData.sentChallenges.removeAll();
         $.each(res.data, function () {
@@ -83,33 +79,32 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         });
       }
     });
-
   };
 
-  getChatMsgs = function(_roomId, _dataArray){
-    coreData.mainSocket.emit("getChat", {roomId:_roomId, userId:coreData.currUser().id}, function(data){
-      var newMessages = false, myMessage = false;
-      if(data.msg == "success"){
-        if(data.length != _dataArray().length){
+  const getChatMsgs = function (_roomId, _dataArray) {
+    coreData.mainSocket.emit("getChat", {roomId: _roomId, userId: coreData.currUser().id}, function (data) {
+      let newMessages = false, myMessage = false;
+      if (data.msg === "success") {
+        if (data.length !== _dataArray().length) {
 
           coreData.activeChatData({
-            roomId:_roomId,
-            length:_dataArray.length,
-            msgs:_dataArray
+            roomId: _roomId,
+            length: _dataArray.length,
+            msgs: _dataArray
           });
 
           // if chat container exist in dom
-          if(document.getElementById("chat-cont")){
+          if (document.getElementById("chat-cont")) {
             // if array is already populated
-            if(_dataArray().length > 0){
+            if (_dataArray().length > 0) {
               totalCurrentMsgs(_dataArray().length); // need to get length of new messages
-              console.log("current: " + totalCurrentMsgs() );
+              console.log("totalCurrentMsgs: " + totalCurrentMsgs());
               totalNewMsgs(data.data.length);
-              if(data.data[data.data.length-1].timestamp){
+              if (data.data.length > 0 && data.data[data.data.length - 1].timestamp) {
                 // if the last index of each are different timestamps then repop chatmsg observable array
-                if( _dataArray()[_dataArray().length-1].timestamp != data.data[data.data.length-1].timestamp ){
+                if (_dataArray()[_dataArray().length - 1].timestamp !== data.data[data.data.length - 1].timestamp) {
                   _dataArray.removeAll(); // clear it out first
-                  $.each(data.data, function(){
+                  $.each(data.data, function () {
                     _dataArray.push(new coreData.ChatMsg(this));
                   });
                   // scroll chat down
@@ -117,15 +112,15 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
                   newMessages = true;
                 }
                 // i just sent it
-                if( data.data[data.data.length-1].username == coreData.currUser().username ){
+                if (data.data[data.data.length - 1].username === coreData.currUser().username) {
                   myMessage = true;
                   totalNewMsgs(data.data.length - 1);
                 }
               }
 
-            }else{
+            } else {
               _dataArray.removeAll();
-              $.each(data.data, function(){
+              $.each(data.data, function () {
                 _dataArray.push(new coreData.ChatMsg(this));
               });
               // scroll chat down
@@ -133,61 +128,62 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
             }
           }
         }
-      } else{
+      } else {
         Materialize.toast("error getting chat", 3000); // want to change this to a toast type message later
       }
-      if(newMessages){
+      if (newMessages) {
         // if its not visible and the last message was not from me
-        if( (parseInt($('#inGameChatWindow').css('bottom')) != 0) && !myMessage){
+        if ((parseInt($('#inGameChatWindow').css('bottom')) != 0) && !myMessage) {
           // set chat-msg div to active class
-          $('.toggle-chat-btn').each(function(){ $(this).addClass("active") });
+          $('.toggle-chat-btn').each(function () {
+            $(this).addClass("active")
+          });
         }
       }
     })
   };
 
-  self.getChallenge = function(_challengeId, _actions){
+  self.getChallenge = function (_challengeId, _actions) {
 
     // call server and get challenge obj
-    coreData.mainSocket.emit("getChallenge", {challengeId:_challengeId}, function(data){
-      if(data.msg == "success"){
+    coreData.mainSocket.emit("getChallenge", {challengeId: _challengeId}, function (data) {
+      if (data.msg == "success") {
         _actions.success(data.data); // send challenge obj back as param to callback
-      }else{
+      } else {
         _actions.error();
       }
     });
-
   };
 
-  self.toggleInGameChat = function(){
-    var $chatModal = $('#inGameChatWindow');
+  self.toggleInGameChat = function () {
+    const $chatModal = $('#inGameChatWindow');
     $chatModal.openModal({
-      ready: function() {
+      ready: function () {
         $(window).off('keyup'); // disable hot keys when chat is active
-        $('.toggle-chat-btn').each(function(){ $(this).removeClass("active") });
+        $('.toggle-chat-btn').each(function () {
+          $(this).removeClass("active")
+        });
         document.title = "UNO";
       }, // Callback for Modal open
-      complete: function() {
+      complete: function () {
         window._uno.game.enableHotKeys();
       } // Callback for Modal close
     });
-
-
   };
 
-  setActiveTab = function(_ele){
-    $('#nav-mobile').find('li').each(function(){
+  const setActiveTab = function (_ele) {
+    $('#nav-mobile').find('li').each(function () {
       $(this).removeClass("active");
     });
-    $('#mobile-nav').find('li').each(function(){
+    $('#mobile-nav').find('li').each(function () {
       $(this).removeClass("active");
     });
     $(_ele).addClass("active");
   };
 
-  changeMainView = function(_tmplName, _tabEle){
+  const changeMainView = function (_tmplName, _tabEle) {
     // check if user is in a game
-    if(userInGame()){
+    if (userInGame()) {
       // they are in a game - make them quit
       // show modal saying they cant navigate here - instead they must quit the game first
       Materialize.toast("You must quit the game first", 3000);
@@ -201,7 +197,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         setActiveTab(_tabEle);
       }
 
-      var tmplName = (_tmplName) ? _tmplName : _tabEle.getAttribute("data-view-name"),
+      const tmplName = (_tmplName) ? _tmplName : _tabEle.getAttribute("data-view-name"),
         subTmplName = (_tabEle) ? _tabEle.getAttribute("data-subview-name") : "",
         subTmplTitle = (_tabEle) ? _tabEle.getAttribute("data-subview-title") : "";
 
@@ -259,19 +255,19 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
           break;
         case "lobby":
           inLobby(true);
-          var getActiveUsersInterval = setInterval(function () {
+          const getActiveUsersInterval = setInterval(function () {
             if (userLoggedIn() && !(challengeModalOpen()) && !(userInGame())) {
               getActiveUsers();
             }
           }, 1500);
-          var getChallengesInterval = setInterval(function () {
+          const getChallengesInterval = setInterval(function () {
             if (userLoggedIn() && !(userInGame())) {
               getChallenges()
             } else {
               clearInterval(getChallengesInterval);
             }
           }, 1500);
-          var getChatMsgsInterval = setInterval(function () {
+          const getChatMsgsInterval = setInterval(function () {
             if (userLoggedIn() && inLobby()) {
               getChatMsgs("1", coreData.chatMsgs);
             } else {
@@ -289,24 +285,23 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     }
   };
 
+  const login = function (item, e, _credentials) {
 
-  login = function (item, e, _credentials) {
-
-    if( (_credentials) || (loginBodyTmpl() == "login-body-tmpl") ){
-      if(!_credentials){
+    if ((_credentials) || (loginBodyTmpl() == "login-body-tmpl")) {
+      if (!_credentials) {
         _credentials = null;
       }
       Materialize.toast("Attempting Login...", 3000);
       // validate login credentials
       validateLogin(_credentials, {
-        success:function(user){
+        success: function (user) {
           //console.log("loggedIn user: " + user);
           changeMainView("lobby");
           userLoggedIn(true);
           coreData.currUser(user);
           window.localStorage.setItem("loggedInToken", user.token);
         },
-        error:function(){
+        error: function () {
           console.log("error logging in");
           $('#login-body-form').find('input').addClass("invalid");
           $('#login-error-msg').slideDown();
@@ -314,31 +309,31 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
         }
       });
 
-    }else{
+    } else {
       // show different form
       loginBodyTmpl("login-body-tmpl");
       pageHeading("Login");
     }
   };
 
-  logout = function(){
+  const logout = function () {
     window.localStorage.removeItem("loggedInToken");
     userLoggedIn(false);
 
     // if user was in game
-    if(userInGame()){
+    if (userInGame()) {
       userInGame(false);
     }
     // if user was in lobby
-    if(inLobby()){
+    if (inLobby()) {
       inLobby(false);
     }
 
     changeMainView("main");
   };
 
-  addUser = function(_actions){
-    var $form = $('#signup-body-form'),
+  const addUser = function (_actions) {
+    const $form = $('#signup-body-form'),
       email = $form.find('input#inputUserEmail').val(),
       username = $form.find('input#inputUsername').val(),
       password = $form.find('input#inputUserPassword').val();
@@ -347,46 +342,45 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       success: function () {
 
         coreData.mainSocket.emit('addUser', {
-            'email': email,
-            'username': username,
-            'password': password
-          }, function(data){
-            if(data.msg == "success"){
-              // Clear the form inputs
-              $('#signup-body-form').find('fieldset input').val('');
-              _actions.success();
-            }else{
-              Materialize.toast(data.msg, 3000);
-            }
-          });
+          'email': email,
+          'username': username,
+          'password': password
+        }, function (data) {
+          if (data.msg == "success") {
+            // Clear the form inputs
+            $('#signup-body-form').find('fieldset input').val('');
+            _actions.success();
+          } else {
+            Materialize.toast(data.msg, 3000);
+          }
+        });
       },
-      errors:function(){
+      errors: function () {
         _actions.error();
       }
     });
   };
 
-
-  signUp = function(){
-    if(loginBodyTmpl() != "signup-body-tmpl"){
+  const signUp = function () {
+    if (loginBodyTmpl() != "signup-body-tmpl") {
       // show different form
       loginBodyTmpl("signup-body-tmpl");
       pageHeading("Sign Up");
-    }else{
+    } else {
       Materialize.toast("Attempting Sign-up...", 3000);
       addUser({
-        success:function(){
+        success: function () {
           util.login(
             null,
             null,
             {
-              username:$('#inputUsername').val(),
-              password:$('#inputUserPassword').val()
+              username: $('#inputUsername').val(),
+              password: $('#inputUserPassword').val()
             }
           );
           // validate login
         },
-        error:function(err){
+        error: function (err) {
           $('#signup-body-form').find('input').addClass("invalid");
           $('#signup-error-msg').slideDown();
           errorMsg(err);
@@ -395,22 +389,21 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     }
   };
 
-  self.handleNavigation = function(data, event){
-    var ele = handleChildrenClick(event.target);
+  self.handleNavigation = function (data, event) {
+    const ele = handleChildrenClick(event.target);
     changeMainView(null, ele);
   };
 
-  handleChildrenClick = function(_ele){
-    var retEle = "";
-    if(_ele.nodeName == "BUTTON"){
+  const handleChildrenClick = function (_ele) {
+    let retEle = "";
+    if (_ele.nodeName == "BUTTON") {
       retEle = _ele;
-    }
-    else{
+    } else {
       $(".button-collapse").sideNav("hide");
 
-      if($(_ele).hasClass("nav-item")){
+      if ($(_ele).hasClass("nav-item")) {
         retEle = _ele;
-      }else{
+      } else {
         retEle = _ele.getAncestorWithClass("nav-item");
       }
     }
@@ -418,42 +411,42 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     return retEle;
   };
 
-  self.checkUserLoggedIn = function(_actions){
+  self.checkUserLoggedIn = function (_actions) {
     // check local storage for token
     // send to checkToken and validate login
-    if(window.localStorage.getItem("loggedInToken")){
-      var token = window.localStorage.getItem("loggedInToken");
+    if (window.localStorage.getItem("loggedInToken")) {
+      const token = window.localStorage.getItem("loggedInToken");
 
-      coreData.mainSocket.emit('validateToken', {token:token}, function(data){
+      coreData.mainSocket.emit('validateToken', {token: token}, function (data) {
         // set currUser to result user
-        if(data.valid == true){
+        if (data.valid === true) {
           coreData.currUser(data.user);
           window.localStorage.setItem("loggedInToken", data.user.token);
           _actions.success();
-        }else{
+        } else {
           _actions.error();
         }
       });
 
-    }else{
+    } else {
       _actions.error();
     }
   };
 
-  self.showPreGameLobby = function(_msg){
+  self.showPreGameLobby = function (_msg) {
     util.changeMainView("pre-game-lobby");
     preGameLobbyMsg(_msg);
   };
 
-  self.showHelp = function(){
+  self.showHelp = function () {
     // show modal with rules / instructions
     $('#helpModal').openModal();
   };
 
-  self.saveUserPreference = function(_ele){
-    var userPref = $(_ele).attr("data-user-pref");
+  self.saveUserPreference = function (_ele) {
+    const userPref = $(_ele).attr("data-user-pref");
 
-    switch(userPref){
+    switch (userPref) {
       case "game-hotkeys":
         localStorage.setItem("showHotKeyInfo", "No");
         break;
@@ -466,19 +459,18 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
   // Updates the inputs with the validation errors
   function showErrors(form, errors) {
     // We loop through all the inputs and show the errors for that input
-    $(form).find("input[name], select[name]").each(function() {
+    $(form).find("input[name], select[name]").each(function () {
       // Since the errors can be null if no errors were found we need to handle
       showErrorsForInput($(this), errors && errors[$(this).attr("name")]);
     });
   }
 
-
   // Shows the errors for a specific input
   function showErrorsForInput(input, errors) {
     // This is the root of the input
-    var formGroup = $(input).parent().parent(),
-    // Find where the error messages will be insert into
-        messages = formGroup.find(".error-msg");
+    const formGroup = $(input).parent().parent(),
+      // Find where the error messages will be insert into
+      messages = formGroup.find(".error-msg");
     // First we remove any old messages and resets the classes
     resetFormGroup(formGroup);
     // If we have errors
@@ -486,7 +478,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       // we first mark the group has having errors
       formGroup.addClass("has-error");
       // then we append all the errors
-      $.each(errors, function(index, error) {
+      $.each(errors, function (index, error) {
         messages.html(error);
       });
     } else {
@@ -501,41 +493,44 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     formGroup.removeClass("has-error");
     formGroup.removeClass("has-success");
     // and remove any old messages
-    $(formGroup).find(".error-msg").each(function() {
+    $(formGroup).find(".error-msg").each(function () {
       $(this).html("");
     });
   }
 
-  validateLogin = function(_credentials, _actions){
-    var errorCount = 0,
-      $loginForm =  $('#login-body-form');
+  const validateLogin = function (_credentials, _actions) {
+    let errorCount = 0,
+      $loginForm = $('#login-body-form');
 
-    $loginForm.find('input').each(function(index, val) {
-      if($(this).val() === '') { errorCount++; }
+    $loginForm.find('input').each(function (index, val) {
+      if ($(this).val() === '') {
+        errorCount++;
+      }
     });
 
     // Check and make sure errorCount's still at zero
-    if(errorCount === 0 || ( _credentials )) {
-      var credentials = {
+    if (errorCount === 0 || (_credentials)) {
+      let credentials = {
         'username': $loginForm.find('input#loginUsername').val(),
         'password': $loginForm.find('input#loginPass').val()
       };
 
-      if(_credentials){
+      if (_credentials) {
         credentials = _credentials;
       }
 
-      coreData.mainSocket.emit('validateLogin', credentials, function(data){
+      coreData.mainSocket.emit('validateLogin', credentials, function (data) {
         (data.valid == true) ? _actions.success(data.user) : _actions.error();
       });
 
-    }else {
+    } else {
       // If errorCount is more than 0, error out
       alert('Please fill in all fields');
     }
   };
-  validateSignUp = function(_actions){
-    var constraints = {
+
+  const validateSignUp = function (_actions) {
+    const constraints = {
       email: {
         // Email is required
         presence: true,
@@ -571,15 +566,15 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
       }
     };
 
-    var form = document.querySelector("#signup-body-form");
+    const form = document.querySelector("#signup-body-form");
     // then we validate them against the constraints
-    var errors = validate(validate.collectFormValues(form), constraints);
+    const errors = validate(validate.collectFormValues(form), constraints);
     // then we update the form to reflect the results
     showErrors(form, errors || {});
     // And if all constraints pass we let the user know
     if (!errors) {
       _actions.success();
-    }else{
+    } else {
       _actions.errors();
     }
   };
@@ -588,11 +583,11 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
 
   // browser redirection code
 
-  getInternetExplorerVersion = function() {
-    var rv = -1; // Return value assumes failure.
+  const getInternetExplorerVersion = function () {
+    let rv = -1; // Return value assumes failure.
     if (navigator.appName == 'Microsoft Internet Explorer') {
-      var ua = navigator.userAgent;
-      var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+      const ua = navigator.userAgent;
+      const re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
       if (re.exec(ua) != null)
         rv = parseFloat(RegExp.$1);
     }
@@ -600,8 +595,8 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
   };
 
   // check if browser version is ie8
-  self.checkVersion = function() {
-    var ver = getInternetExplorerVersion(),
+  self.checkVersion = function () {
+    let ver = getInternetExplorerVersion(),
       isIe8 = false;
     if (ver > -1) {
       isIe8 = (ver <= 8.0);
@@ -613,9 +608,8 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
 
   // Prototype functions
 
-  Date.prototype.getMinutesTwoDigits = function()
-  {
-    var retval = this.getMinutes();
+  Date.prototype.getMinutesTwoDigits = function () {
+    const retval = this.getMinutes();
     if (retval < 10) {
       return ("0" + retval.toString());
     } else {
@@ -623,9 +617,8 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     }
   };
 
-  Date.prototype.getHoursNonMilitary = function()
-  {
-    var retval = this.getHours();
+  Date.prototype.getHoursNonMilitary = function () {
+    let retval = this.getHours();
 
     if (retval > 12) {
       retval -= 12;
@@ -635,9 +628,9 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
     return retval;
   };
 
-  Element.prototype.getAncestorWithClass = function(_className){
-    var ele = this;
-    while ((ele = ele.parentElement) && !ele.classList.contains(_className));
+  Element.prototype.getAncestorWithClass = function (_className) {
+    let ele = this;
+    while ((ele = ele.parentElement) && !ele.classList.contains(_className)) ;
     return ele;
   };
 
@@ -685,6 +678,7 @@ define('util', ['jquery', 'knockout', 'coreData', 'chat' ], function ( $, ko, co
   self.setActiveTab = setActiveTab;
   self.getActiveUsers = getActiveUsers;
   self.getChallenges = getChallenges;
+  self.getChatMsgs = getChatMsgs;
 
   self.login = login;
   self.logout = logout;

@@ -1,0 +1,22 @@
+script(type="text/html", id="chat-section")
+  div#chat-window
+    div#chat-cont
+      // ko if: coreData.activeChatData().msgs().length == 0
+      div(class="card-panel" style="margin:.5em;overflow-x:hidden") No Chat Messages within the last 15 mins
+      // /ko
+
+      div(data-bind="foreach:coreData.activeChatData().msgs()")
+        div(class="card-panel", style="margin:.5em;overflow-x:hidden")
+          b
+            span(data-bind="text:sender, attr:{ 'class':senderColor}")
+          span(style="margin-right:1em;") :
+          span(data-bind="text:message")
+          span(data-bind="text:timeSent", style="float:right;color:#CCC;")
+
+    div#chat-controls(class="row")
+      div(class="input-field col pw-90")
+        input#chat-msg(type="text", data-bind="event:{ keyup:chat.sendChatViaEnterKey }")
+        label(for="chat-msg") Chat Message
+      div(class="col chat-btn pw-10")
+        i(id="chat-btn", class="material-icons", data-bind="click:chat.sendChat, attr:{ 'data-roomid':coreData.activeChatData().roomId }") send
+        // add indicator for new msgs
